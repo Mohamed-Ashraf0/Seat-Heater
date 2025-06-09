@@ -7,7 +7,7 @@ This project implements a real-time **Seat Heater Control System** for the drive
 
 Watch a full demonstration of the Seat Heater Control System in action:
 
-👉 [**Click here to view the demo video**]([https://your-link-here.com](https://drive.google.com/file/d/1d6cjCyyKYW0Kpo7Lk9ofvzDSn-W6cpok/view?usp=sharing))
+👉 [**Click here to view the demo video**]((https://drive.google.com/file/d/1d6cjCyyKYW0Kpo7Lk9ofvzDSn-W6cpok/view?usp=sharing))
 ## 🧩 Project Overview
 
 Each seat includes:
