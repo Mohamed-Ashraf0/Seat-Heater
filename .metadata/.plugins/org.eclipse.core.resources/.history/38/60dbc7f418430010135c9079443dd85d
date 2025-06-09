@@ -1,0 +1,74 @@
+/**
+ * main.c
+ */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "event_groups.h"
+#include "semphr.h"
+#include <stdint.h>
+#include "uart0.h"
+#include "adc0-1.h"
+#include "GPTM.h"
+#include "GPIO.h"
+
+/* Static allocation for application task */
+static void prvHighPriorityTaskFunction( void * pvParams );
+static void prvLowPriorityTaskFunction( void * pvParams );
+
+int main(void)
+{
+    UART0_Init();
+    BaseType_t xTaskCreationResult = pdFAIL;
+    xTaskCreationResult=xTaskCreate(
+            prvHighPriorityTaskFunction,
+            "High",
+            configMINIMAL_STACK_SIZE,
+            NULL,
+            1,
+            NULL);
+    configASSERT(xTaskCreationResult == pdPASS );
+    xTaskCreationResult=xTaskCreate(
+            prvLowPriorityTaskFunction,
+                "Low",
+                configMINIMAL_STACK_SIZE,
+                NULL,
+                0,
+                NULL);
+        configASSERT(xTaskCreationResult == pdPASS );
+    vTaskStartScheduler();
+
+    for(;;) {} // Should never reach here
+}
+
+static void prvHighPriorityTaskFunction( void * pvParams )
+{
+    (void)pvParams;
+    uint64_t i;
+
+    for(;;) {
+        UART0_SendString("High");
+        UART0_SendString(" \r\n\n**************************************\r\n\n");
+        for( i = 0; i < 1000000000; i++ )
+                {
+                    /* This loop is just a very crude delay implementation. */
+                }
+    }
+}
+static void prvLowPriorityTaskFunction( void * pvParams )
+{
+    (void)pvParams;
+    uint64_t i;
+    for(;;) {
+        UART0_SendString("low");
+        UART0_SendString(" \r\n\n**************************************\r\n\n");
+        for( i = 0; i < 1000000000; i++ )
+                {
+                    /* This loop is just a very crude delay implementation. */
+                }
+    }
+}
+
+
+void ADC0SS0_HANDLER(void) {}
+void ADC1SS0_HANDLER(void) {}
+void GPIOPortF_Handler(void) {}

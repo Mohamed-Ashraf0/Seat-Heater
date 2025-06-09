@@ -1,0 +1,148 @@
+
+**** Build of configuration Debug for project FreeRTOS_Proj1 ****
+
+"C:\\ti\\ccs1040\\ccs\\utils\\bin\\gmake" -k -j 12 all -O 
+ 
+Building file: "../main.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="main.d_raw"  "../main.c"
+ 
+>> Compilation failure
+subdir_rules.mk:9: recipe for target 'main.obj' failed
+"C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/FreeRTOSConfig.h", line 21: fatal error #1965: cannot open source file "GPTM.h"
+1 catastrophic error detected in the compilation of "../main.c".
+Compilation terminated.
+gmake: *** [main.obj] Error 1
+Building file: "../MCAL/ADC/adc.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="MCAL/ADC/adc.d_raw" --obj_directory="MCAL/ADC"  "../MCAL/ADC/adc.c"
+ 
+>> Compilation failure
+MCAL/ADC/subdir_rules.mk:9: recipe for target 'MCAL/ADC/adc.obj' failed
+"..\MCAL\ADC\adc.h", line 16: fatal error #1966: cannot open source file "std_types.h": The compiler RTS provides (outdated) AUTOSAR 3.1 header files, causing problems for applications which need a later version of AUTOSAR.  To solve that problem, the compiler RTS AUTOSAR files have been moved to a subdirectory of the include directory.  If you still want to use the old AUTOSAR header files, add ${include}/AUTOSAR31 to your include file search path.  If you want to use a later version of AUTOSAR, you will need to get it from a third party.
+1 catastrophic error detected in the compilation of "../MCAL/ADC/adc.c".
+Compilation terminated.
+gmake: *** [MCAL/ADC/adc.obj] Error 1
+Building file: "../MCAL/EEPROM/EEPROM.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="MCAL/EEPROM/EEPROM.d_raw" --obj_directory="MCAL/EEPROM"  "../MCAL/EEPROM/EEPROM.c"
+ 
+>> Compilation failure
+MCAL/EEPROM/subdir_rules.mk:9: recipe for target 'MCAL/EEPROM/EEPROM.obj' failed
+"C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/tm4c123gh6pm_registers.h", line 4: fatal error #1966: cannot open source file "std_types.h": The compiler RTS provides (outdated) AUTOSAR 3.1 header files, causing problems for applications which need a later version of AUTOSAR.  To solve that problem, the compiler RTS AUTOSAR files have been moved to a subdirectory of the include directory.  If you still want to use the old AUTOSAR header files, add ${include}/AUTOSAR31 to your include file search path.  If you want to use a later version of AUTOSAR, you will need to get it from a third party.
+1 catastrophic error detected in the compilation of "../MCAL/EEPROM/EEPROM.c".
+Compilation terminated.
+gmake: *** [MCAL/EEPROM/EEPROM.obj] Error 1
+Building file: "../tm4c123gh6pm_startup_ccs.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="tm4c123gh6pm_startup_ccs.d_raw"  "../tm4c123gh6pm_startup_ccs.c"
+Finished building: "../tm4c123gh6pm_startup_ccs.c"
+ 
+Building file: "../MCAL/GPIO/gpio.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="MCAL/GPIO/gpio.d_raw" --obj_directory="MCAL/GPIO"  "../MCAL/GPIO/gpio.c"
+ 
+>> Compilation failure
+MCAL/GPIO/subdir_rules.mk:9: recipe for target 'MCAL/GPIO/gpio.obj' failed
+"..\MCAL\GPIO\gpio.h", line 16: fatal error #1966: cannot open source file "std_types.h": The compiler RTS provides (outdated) AUTOSAR 3.1 header files, causing problems for applications which need a later version of AUTOSAR.  To solve that problem, the compiler RTS AUTOSAR files have been moved to a subdirectory of the include directory.  If you still want to use the old AUTOSAR header files, add ${include}/AUTOSAR31 to your include file search path.  If you want to use a later version of AUTOSAR, you will need to get it from a third party.
+1 catastrophic error detected in the compilation of "../MCAL/GPIO/gpio.c".
+Compilation terminated.
+gmake: *** [MCAL/GPIO/gpio.obj] Error 1
+Building file: "../MCAL/GPTM/GPTM.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="MCAL/GPTM/GPTM.d_raw" --obj_directory="MCAL/GPTM"  "../MCAL/GPTM/GPTM.c"
+ 
+>> Compilation failure
+MCAL/GPTM/subdir_rules.mk:9: recipe for target 'MCAL/GPTM/GPTM.obj' failed
+"..\MCAL\GPTM\GPTM.h", line 16: fatal error #1966: cannot open source file "std_types.h": The compiler RTS provides (outdated) AUTOSAR 3.1 header files, causing problems for applications which need a later version of AUTOSAR.  To solve that problem, the compiler RTS AUTOSAR files have been moved to a subdirectory of the include directory.  If you still want to use the old AUTOSAR header files, add ${include}/AUTOSAR31 to your include file search path.  If you want to use a later version of AUTOSAR, you will need to get it from a third party.
+1 catastrophic error detected in the compilation of "../MCAL/GPTM/GPTM.c".
+Compilation terminated.
+gmake: *** [MCAL/GPTM/GPTM.obj] Error 1
+Building file: "../MCAL/UART/uart0.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="MCAL/UART/uart0.d_raw" --obj_directory="MCAL/UART"  "../MCAL/UART/uart0.c"
+ 
+>> Compilation failure
+MCAL/UART/subdir_rules.mk:9: recipe for target 'MCAL/UART/uart0.obj' failed
+"..\MCAL\UART\uart0.h", line 16: fatal error #1966: cannot open source file "std_types.h": The compiler RTS provides (outdated) AUTOSAR 3.1 header files, causing problems for applications which need a later version of AUTOSAR.  To solve that problem, the compiler RTS AUTOSAR files have been moved to a subdirectory of the include directory.  If you still want to use the old AUTOSAR header files, add ${include}/AUTOSAR31 to your include file search path.  If you want to use a later version of AUTOSAR, you will need to get it from a third party.
+1 catastrophic error detected in the compilation of "../MCAL/UART/uart0.c".
+Compilation terminated.
+gmake: *** [MCAL/UART/uart0.obj] Error 1
+Building file: "../Source/event_groups.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="Source/event_groups.d_raw" --obj_directory="Source"  "../Source/event_groups.c"
+ 
+>> Compilation failure
+Source/subdir_rules.mk:9: recipe for target 'Source/event_groups.obj' failed
+"C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/FreeRTOSConfig.h", line 21: fatal error #1965: cannot open source file "GPTM.h"
+1 catastrophic error detected in the compilation of "../Source/event_groups.c".
+Compilation terminated.
+gmake: *** [Source/event_groups.obj] Error 1
+Building file: "../Source/list.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="Source/list.d_raw" --obj_directory="Source"  "../Source/list.c"
+ 
+>> Compilation failure
+Source/subdir_rules.mk:9: recipe for target 'Source/list.obj' failed
+"C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/FreeRTOSConfig.h", line 21: fatal error #1965: cannot open source file "GPTM.h"
+1 catastrophic error detected in the compilation of "../Source/list.c".
+Compilation terminated.
+gmake: *** [Source/list.obj] Error 1
+Building file: "../Source/queue.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="Source/queue.d_raw" --obj_directory="Source"  "../Source/queue.c"
+ 
+>> Compilation failure
+Source/subdir_rules.mk:9: recipe for target 'Source/queue.obj' failed
+"C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/FreeRTOSConfig.h", line 21: fatal error #1965: cannot open source file "GPTM.h"
+1 catastrophic error detected in the compilation of "../Source/queue.c".
+Compilation terminated.
+gmake: *** [Source/queue.obj] Error 1
+Building file: "../Source/tasks.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="Source/tasks.d_raw" --obj_directory="Source"  "../Source/tasks.c"
+ 
+>> Compilation failure
+Source/subdir_rules.mk:9: recipe for target 'Source/tasks.obj' failed
+"C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/FreeRTOSConfig.h", line 21: fatal error #1965: cannot open source file "GPTM.h"
+1 catastrophic error detected in the compilation of "../Source/tasks.c".
+Compilation terminated.
+gmake: *** [Source/tasks.obj] Error 1
+Building file: "../Source/timers.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="Source/timers.d_raw" --obj_directory="Source"  "../Source/timers.c"
+ 
+>> Compilation failure
+Source/subdir_rules.mk:9: recipe for target 'Source/timers.obj' failed
+"C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/FreeRTOSConfig.h", line 21: fatal error #1965: cannot open source file "GPTM.h"
+1 catastrophic error detected in the compilation of "../Source/timers.c".
+Compilation terminated.
+gmake: *** [Source/timers.obj] Error 1
+Building file: "../Source/portable/CCS/ARM_CM4F/port.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="Source/portable/CCS/ARM_CM4F/port.d_raw" --obj_directory="Source/portable/CCS/ARM_CM4F"  "../Source/portable/CCS/ARM_CM4F/port.c"
+ 
+>> Compilation failure
+Source/portable/CCS/ARM_CM4F/subdir_rules.mk:9: recipe for target 'Source/portable/CCS/ARM_CM4F/port.obj' failed
+"C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/FreeRTOSConfig.h", line 21: fatal error #1965: cannot open source file "GPTM.h"
+1 catastrophic error detected in the compilation of "../Source/portable/CCS/ARM_CM4F/port.c".
+Compilation terminated.
+gmake: *** [Source/portable/CCS/ARM_CM4F/port.obj] Error 1
+Building file: "../Source/portable/MemMang/heap_2.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="Source/portable/MemMang/heap_2.d_raw" --obj_directory="Source/portable/MemMang"  "../Source/portable/MemMang/heap_2.c"
+ 
+>> Compilation failure
+Source/portable/MemMang/subdir_rules.mk:9: recipe for target 'Source/portable/MemMang/heap_2.obj' failed
+"C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/FreeRTOSConfig.h", line 21: fatal error #1965: cannot open source file "GPTM.h"
+1 catastrophic error detected in the compilation of "../Source/portable/MemMang/heap_2.c".
+Compilation terminated.
+gmake: *** [Source/portable/MemMang/heap_2.obj] Error 1
+Building file: "../Source/portable/CCS/ARM_CM4F/portasm.asm"
+Invoking: Arm Compiler
+"C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1" --include_path="C:/Users/Moham/OneDrive/Desktop/FreeRTOS_Proj1/Source/include" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/ADC" --include_path="D:/Autosar course/RTOS/RTOS_WS/FreeRTOS_Proj1/MCAL/EEPROM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/Common" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPIO" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/GPTM" --include_path="D:/Autosar course/RTOS/FreeRTOS Essential Files/MCAL/UART" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/include" --include_path="D:/Autosar course/RTOS/FreeRTOSv202212.01/FreeRTOS/Source/portable/CCS/ARM_CM4F" --include_path="C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="Source/portable/CCS/ARM_CM4F/portasm.d_raw" --obj_directory="Source/portable/CCS/ARM_CM4F"  "../Source/portable/CCS/ARM_CM4F/portasm.asm"
+Finished building: "../Source/portable/CCS/ARM_CM4F/portasm.asm"
+ 
+gmake: Target 'all' not remade because of errors.
+
+**** Build Finished ****

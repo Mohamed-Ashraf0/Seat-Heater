@@ -1,0 +1,82 @@
+/**
+ * main.c
+ */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "event_groups.h"
+#include "semphr.h"
+#include <stdint.h>
+#include "uart0.h"
+#include "adc0-1.h"
+#include "GPTM.h"
+#include "GPIO.h"
+
+/**
+ * @brief Functions that implement FreeRTOS tasks.
+ */
+static void prvTask1Function( void * pvParams );
+static void prvTask2Function( void * pvParams );
+/*-----------------------------------------------------------*/
+
+int main(void)
+{
+    UART0_Init();
+    BaseType_t xTaskCreationResult = pdFAIL;
+    xTaskCreationResult=xTaskCreate(
+            prvTask1Function,
+            "Task1",
+            configMINIMAL_STACK_SIZE,
+            NULL,
+            tskIDLE_PRIORITY,
+            NULL);
+    configASSERT(xTaskCreationResult == pdPASS );
+
+    vTaskStartScheduler();
+
+    for(;;) {} // Should never reach here
+}
+
+static void prvTask1Function( void * pvParams )
+{
+    (void)pvParams;
+    uint64_t i;
+    BaseType_t xTaskCreationResult = pdFAIL;
+    //TickType_t xLastWakeTime = xTaskGetTickCount();
+    xTaskCreationResult=xTaskCreate(
+               prvTask2Function,
+                   "Task2",
+                   configMINIMAL_STACK_SIZE,
+                   NULL,
+                   tskIDLE_PRIORITY,
+                   NULL);
+           configASSERT(xTaskCreationResult == pdPASS );
+    for(;;) {
+        UART0_SendString("Task11");
+        UART0_SendString(" \r\n\n**************************************\r\n\n");
+        //vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS( 1000 ) );
+        for( i = 0; i < 100000000; i++ )
+               {
+                   /* This loop is just a very crude delay implementation. */
+               }
+    }
+}
+static void prvTask2Function( void * pvParams )
+{
+    (void)pvParams;
+    uint64_t i;
+    //TickType_t xLastWakeTime = xTaskGetTickCount();
+    for(;;) {
+        UART0_SendString("Task22");
+        UART0_SendString(" \r\n\n**************************************\r\n\n");
+        //vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS( 1000 ) );
+        for( i = 0; i < 100000000; i++ )
+               {
+                   /* This loop is just a very crude delay implementation. */
+               }
+    }
+}
+
+
+void ADC0SS0_HANDLER(void) {}
+void ADC1SS0_HANDLER(void) {}
+void GPIOPortF_Handler(void) {}

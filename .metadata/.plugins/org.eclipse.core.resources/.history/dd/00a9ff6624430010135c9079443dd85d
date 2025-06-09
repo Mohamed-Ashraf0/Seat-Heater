@@ -1,0 +1,92 @@
+/**
+ * main.c
+ */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "event_groups.h"
+#include "semphr.h"
+#include <stdint.h>
+#include "uart0.h"
+#include "adc0-1.h"
+#include "GPTM.h"
+#include "GPIO.h"
+
+/**
+ * @brief Functions that implement FreeRTOS tasks.
+ */
+static void prvSenderTask( void * pvParams );
+static void prvReceiverTask( void * pvParams );
+/*-----------------------------------------------------------*/
+/**
+ * @brief Queue used in the program.
+ */
+static QueueHandle_t xQueue;
+/*-----------------------------------------------------------*/
+int main(void)
+{
+    UART0_Init();
+    BaseType_t xTaskCreationResult = pdFAIL;
+    xTaskCreationResult=xTaskCreate(
+            prvSenderTask,
+            "Sender",
+            configMINIMAL_STACK_SIZE,
+            NULL,
+            tskIDLE_PRIORITY + 1,
+            NULL);
+    configASSERT(xTaskCreationResult == pdPASS );
+    xTaskCreationResult=xTaskCreate(
+            prvReceiverTask,
+             "Receiver",
+             configMINIMAL_STACK_SIZE,
+             NULL,
+             tskIDLE_PRIORITY,
+             NULL);
+    configASSERT(xTaskCreationResult == pdPASS );
+    xQueue =xQueueCreate(
+            5,//uxQueueLength
+            sizeof(UBaseType_t)//uxItemSize
+            );
+    vTaskStartScheduler();
+
+    for(;;) {} // Should never reach here
+}
+
+static void prvSenderTask( void * pvParams )
+{
+    BaseType_t xQueueSendResult;
+    UBaseType_t uxValueToSend = 0;
+
+    (void)pvParams;
+    uint64_t i;
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    for(;;) {
+        uxValueToSend++;
+        xQueueSendResult=xQueueSend(xQueue,&uxValueToSend,portMAX_DELAY);
+        configASSERT( xQueueSendResult == pdPASS );
+        UART0_SendString("sent :-");
+        UART0_SendNumber(uxValueToSend);
+        UART0_SendString(" \r\n\n**************************************\r\n\n");
+        vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS( 1000 ) );
+    }
+}
+static void prvReceiverTask( void * pvParams )
+{
+    (void)pvParams;
+    uint64_t i;
+    UBaseType_t uxReceivedValue;
+    //TickType_t xLastWakeTime = xTaskGetTickCount();
+    for(;;) {
+        xQueueReceive(xQueue, &uxReceivedValue, portMAX_DELAY);
+        UART0_SendString("Received :-");
+        UART0_SendNumber(uxReceivedValue);
+        UART0_SendString("items in queue :-");
+        UART0_SendNumber(uxQueueMessagesWaiting( xQueue ) );
+        UART0_SendString(" \r\n\n**************************************\r\n\n");
+        //vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS( 1000 ) );
+    }
+}
+
+
+void ADC0SS0_HANDLER(void) {}
+void ADC1SS0_HANDLER(void) {}
+void GPIOPortF_Handler(void) {}

@@ -1,0 +1,25 @@
+#include<stdint.h>
+#include "uart0.h"
+#include "adc0-1.h"
+int main(void)
+{
+UART0_Init();
+ADC0_Init();
+ADC1_Init();
+ADC0_StartConv();
+ADC1_StartConv();
+uint32_t x;
+uint32_t y;
+int i;
+
+while(1)
+{
+    x=ADC0_Read();
+    y=ADC1_Read();
+    UART0_SendString("passenger seat temperature:- ");
+    UART0_SendNumber(x);
+    UART0_SendString("driver seat temperature:- ");
+    UART0_SendNumber(y);
+    for(i=0;i<100000;i++){}
+}
+}

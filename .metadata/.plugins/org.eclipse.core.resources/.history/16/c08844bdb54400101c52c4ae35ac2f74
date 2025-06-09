@@ -1,0 +1,123 @@
+ /*
+ *  main.c
+ *
+ *  Created on: June 7, 2025
+ *      Author: Mohamed Ashraf
+ */
+/* Kernel includes. */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "event_groups.h"
+#include "queue.h"
+//#include "timers.h"
+//#include "stream_buffer.h"
+//#include "message_buffer.h"
+/* MCAL includes. */
+#include <stdint.h>//uint8_t   uint32_t
+#include "uart0.h"
+#include "adc0-1.h"
+#include "GPTM.h"
+#include "GPIO.h"
+#include "tm4c123gh6pm_registers.h"
+///////////////////////* Defined Macros*///////////////////////
+//macro for circular increment for heating state with each sw presssed
+#define CIRCULAR_INC_HEATING_LEVEL(level) \
+    (level) = (HeatingLevel)(((int)(level) + 1) % mainHEATING_LEVEL_COUNT)
+/**
+ * @brief Definitions of event bits.
+ */
+#define mainSW1_PRESSED_BIT           ( 1UL << 0UL )//sw1 pressed by driver
+#define mainSW2_PRESSED_BIT           ( 1UL << 1UL )//sw2 pressed by passenger
+#define mainData_TO_DISPLAY_BIT       ( 1UL << 2UL )//any of driver or passenger (current temp or desired temo or intensity )changed
+
+/**
+ * @brief Mutex used in this program.
+ */
+static SemaphoreHandle_t xDriverHeatingLevelMutex= NULL;
+static SemaphoreHandle_t xPassengerHeatingLevelMutex= NULL;
+
+/**
+ * @brief Semaphore used in this program.
+ */
+//should be mutex but it is used from ISR so will be binary semaphore
+static SemaphoreHandle_t xDriverTempSemphr= NULL;
+static SemaphoreHandle_t xPassengerTempSemphr= NULL;
+/**
+ * @brief Event group used in this program.
+ */
+static EventGroupHandle_t xEventGroup = NULL;
+
+/**
+ * @brief Queue used in the program.
+ */
+//////////////////////*Typedefs*////////////////////////////
+typedef enum {
+    mainDriver_G_40,
+    mainDriver_L_5,
+    mainDriver_G_40,
+    mainDriver_L_5
+} ErrorType;
+typedef enum {
+    mainHIGH_INTENSITY,
+    mainMEDIUM_INTENSITY,
+    mainLOW_INTENSITY,
+    mainNO_INTENSITY,
+    mainERROR
+} HeaterState;
+typedef enum {
+    mainOFF,
+    mainDESIRED_35,
+    mainDESIRED_30,
+    mainDESIRED_25,
+    // Sentinel value for bounds checking
+    mainHEATING_LEVEL_COUNT
+} HeatingLevel;
+//passed in queue
+typedef struct
+{
+    ErrorType error;
+    HeaterState LastState
+    uint32 TimeStamp;
+} DiagnosticsTaskData;
+//passed as task parameter
+typedef struct
+{
+    void (*adcConv)(void);
+} TempConvTaskInformation;
+
+/*Global Variables*/
+HeaterState gDriverHeaterState=mainNO_INTENSITY;
+HeaterState gPassengerHeaterState=mainNO_INTENSITY;
+HeatingLevel gDriverHeatingLevel=mainOFF;
+HeatingLevel gPassengerHeatingLevel=mainOFF;
+uint8_t gDriverSeatTemp;
+uint8_t gPassengerSeatTemp;
+uint32_t ullTasksOutTime[10+1];
+uint32_t ullTasksInTime[10+1];
+uint32_t ullTasksExecutionTime[10+1];
+/* Function Prototypes*/
+static void prvSetupHardware(void);
+/* RTOS Tasks*/
+
+
+
+int main(void)
+{
+    /* Start the scheduler so the created tasks start executing. */
+        vTaskStartScheduler();
+
+        /* The following line should never be reached. */
+        for (;;);
+}
+static void prvSetupHardware(void)
+{
+    GPIO_Init();
+    UART0_Init();
+    ADC0_Init();
+    ADC1_Init();
+    GPTM_WTimer0Init();
+}
+void ADC0SS0_HANDLER(void) {}
+void ADC1SS0_HANDLER(void) {}
+void GPIOPortF_Handler(void) {}

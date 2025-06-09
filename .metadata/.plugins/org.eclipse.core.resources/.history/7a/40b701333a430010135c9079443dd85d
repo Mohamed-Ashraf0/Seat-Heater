@@ -1,0 +1,88 @@
+/**
+ * main.c
+ */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "event_groups.h"
+#include "semphr.h"
+#include "timers.h"
+#include <stdint.h>
+#include "uart0.h"
+#include "adc0-1.h"
+#include "GPTM.h"
+#include "GPIO.h"
+
+/**
+ * @brief Functions that implement FreeRTOS tasks.
+ */
+static void prvTask1Function( void * pvParams );
+static void prvTask2Function( void * pvParams );
+/*-----------------------------------------------------------*/
+/**
+ * @brief Tutorial entry point.
+ */
+int main(void)
+{
+    UART0_Init();
+    BaseType_t xTaskCreationResult = pdFAIL;
+    xTaskCreationResult = xTaskCreate( prvTask1Function,
+                                           "Task1",
+                                           configMINIMAL_STACK_SIZE,
+                                           NULL,
+                                           tskIDLE_PRIORITY,
+                                           NULL );
+        configASSERT( xTaskCreationResult == pdPASS );
+
+        xTaskCreationResult = xTaskCreate( prvTask2Function,
+                                           "Task2",
+                                           configMINIMAL_STACK_SIZE,
+                                           NULL,
+                                           tskIDLE_PRIORITY,
+                                           NULL );
+        configASSERT( xTaskCreationResult == pdPASS );
+    vTaskStartScheduler();
+
+    for(;;) {} // Should never reach here
+}
+/*-----------------------------------------------------------*/
+static void prvTask1Function( void * pvParams )
+{
+    uint64_t i;
+
+    /* Silence warning about unused parameters. */
+    ( void ) pvParams;
+
+    for( ;; )
+    {
+        UART0_SendString("Task 2 is running");
+        UART0_SendString(" \r\n\n**************************************\r\n\n");
+        for( i = 0; i < 100000000; i++ )
+        {
+            /* This loop is just a very crude delay implementation. */
+        }
+    }
+}
+/*-----------------------------------------------------------*/
+
+static void prvTask2Function( void * pvParams )
+{
+    uint64_t i;
+
+    /* Silence warning about unused parameters. */
+    ( void ) pvParams;
+
+    for( ;; )
+    {
+        UART0_SendString("Task 2 is running");
+        UART0_SendString(" \r\n\n**************************************\r\n\n");
+
+
+        for( i = 0; i < 100000000; i++ )
+        {
+            /* This loop is just a very crude delay implementation. */
+        }
+    }
+}
+void ADC0SS0_HANDLER(void) {}
+void ADC1SS0_HANDLER(void) {}
+void GPIOPortF_Handler(void) {}

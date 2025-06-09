@@ -1,0 +1,11 @@
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/arch=x86_64
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/name=Local
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/os=win32
+configDescList=org.eclipse.launchbar.core.descriptorType.default\:LED_Blink,org.eclipse.launchbar.core.descriptorType.default\:Tiva TM4C123GH6PM.ccxml,org.eclipse.launchbar.core.descriptorType.default\:RTOS_Labs,org.eclipse.launchbar.core.descriptorType.default\:Seat_Heater
+eclipse.preferences.version=1
+org.eclipse.launchbar.core.descriptorType.default\:LED_Blink/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:LED_Blink/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local
+org.eclipse.launchbar.core.descriptorType.default\:RTOS_Labs/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:Seat_Heater/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:Tiva\ TM4C123GH6PM.ccxml/activeLaunchMode=debug
+org.eclipse.launchbar.core.descriptorType.default\:Tiva\ TM4C123GH6PM.ccxml/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local

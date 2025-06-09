@@ -1,0 +1,45 @@
+#include<stdint.h>
+#include "uart0.h"
+#include "adc0-1.h"
+uint32_t gPassengerTemp;
+uint32_t gDriverTemp;
+// ADC Interrupt Handler Declarations
+void ADC0Seq0_Handler(void);
+void ADC1Seq0_Handler(void);
+int main(void)
+{
+UART0_Init();
+ADC0_Init();
+ADC1_Init();
+ADC0_StartConv();
+ADC1_StartConv();
+int i;
+int j;
+while(1)
+{
+    ADC0_StartConv();
+    ADC1_StartConv();
+    UART0_SendString("passenger seat temperature:- ");
+    UART0_SendNumber(gPassengerTemp);
+    UART0_SendString(" \r\n\n**************************************\r\n\n");
+    UART0_SendString("driver seat temperature:- ");
+    UART0_SendNumber(gDriverTemp);
+    UART0_SendString(" \r\n\n**************************************\r\n\n");
+    for(i=0;i<10000;i++){
+        for(j=0;j<100;j++)
+        {
+
+        }
+    }
+}
+}
+void ADC0Seq0_Handler (void)
+{
+    ADC0_ISC_R|=(1<<0);
+    gPassengerTemp=(ADC0_SSFIFO0_R*TARGET_MAX)/ADC_MAX;
+}
+void ADC1Seq0_Handler (void)
+{
+    ADC1_ISC_R|=(1<<0);
+    gDriverTemp=(ADC1_SSFIFO0_R*TARGET_MAX)/ADC_MAX;
+}

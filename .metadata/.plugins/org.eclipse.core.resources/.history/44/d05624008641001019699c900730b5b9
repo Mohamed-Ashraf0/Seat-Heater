@@ -1,0 +1,22 @@
+#include<stdint.h>
+#include "inc/tm4c123gh6pm.h"
+#include "MCAL/inc/uart0.h"
+int main(void)
+{
+//volatile uint32_t ui32Loop;
+UART0_Init();
+//Enable the GPIO port (used for LED)
+//SYSCTL_RCGC2_R=SYSCTL_RCGC2_GPIOF;
+//Do a dummy read for inserting a few cycles after enabling peripheral.
+//ui32Loop=SYSCTL_RCGC2_R;
+//Enble GPIO pins for output (LED)
+//GPIO_PORTF_DIR_R=0x08;
+//Enble GPIO pins for Digital functionality
+//GPIO_PORTF_DEN_R=0x08;
+// forever loop
+UART0_SendString("NO Intensity");
+while(1)
+{
+
+}
+}

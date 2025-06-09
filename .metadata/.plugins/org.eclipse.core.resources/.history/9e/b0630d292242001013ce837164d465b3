@@ -1,0 +1,118 @@
+/*
+ *  uart0.c
+ *
+ *  Created on: June 5, 2025
+ *      Author: Mohamed Ashraf
+ */
+#include "uart0.h"
+
+/**
+ * @brief Converts a signed 32-bit integer to a string.
+ * @param num  The number to convert (supports negative values).
+ * @param str  Output buffer (must have space for at least 12 chars).
+ * @note  Uses your existing UART0_SendString() for transmission.
+ */
+void IntToStr(int32_t num, uint8_t *str) {
+    uint32_t i = 0;
+    uint8_t is_negative = (num < 0);
+
+    // Handle negative numbers
+    if (is_negative) {
+        num = -num;
+    }
+
+    // Handle 0 explicitly (avoys empty string)
+    if (num == 0) {
+        str[i++] = '0';
+    }
+    else {
+        // Extract digits in reverse order
+        while (num > 0) {
+            str[i++] = (num % 10) + '0';  // Convert digit to ASCII
+            num /= 10;
+        }
+    }
+
+    // Add negative sign if needed
+    if (is_negative) {
+        str[i++] = '-';
+    }
+
+    str[i] = '\0';  // Null-terminate
+
+    // Reverse the string (digits were extracted in reverse)
+    for (uint32_t j = 0; j < i / 2; j++) {
+        uint8_t temp = str[j];
+        str[j] = str[i - j - 1];
+        str[i - j - 1] = temp;
+    }
+}
+/**
+ * @brief Initializes UART0 with 9600 baud rate (8N1 configuration)
+ *        using PA0 (RX) and PA1 (TX) pins
+ */
+
+void UART0_Init(void)
+{
+    SYSCTL_RCGCGPIO_R|=SYSCTL_RCGCGPIO_R0; // Enable GPIOA clock
+    while(!(SYSCTL_PRGPIO_R & SYSCTL_PRGPIO_R0));// Wait for clock stabilization
+    GPIO_PORTA_AMSEL_R&=~(0X03); // Disable analog mode
+    GPIO_PORTA_DIR_R&=~(0X01);// PA0 (RX) as input
+    GPIO_PORTA_DIR_R|=0x02;// PA1 (TX) as output
+    GPIO_PORTA_AFSEL_R|= 0x03;// Enable alternate function
+    GPIO_PORTA_PCTL_R=(GPIO_PORTA_PCTL_R & 0xFFFFFF00) | 0x00000011;//PCTL value for uart0 at pin 0,1
+    GPIO_PORTA_DEN_R|=0x03;// Digital enable
+    SYSCTL_RCGCUART_R|=SYSCTL_RCGCUART_R0; // Enable UART0 clock
+    while(!(SYSCTL_PRUART_R & SYSCTL_PRUART_R0));// Wait for clock stabilization
+    UART0_CTL_R = 0; // Disable UART before configuration
+    UART0_CC_R  = 0; // System clock (SYSCLK)
+    //clock source (precision internal oscillator)(default)=16Mhz
+    //HSE=0 so div by 16
+    //16Mhz/9600*16  =104.166667
+    //0.16667*64+0.5=11.16667
+    UART0_IBRD_R = 104;
+    UART0_FBRD_R = 11;
+    UART0_LCRH_R=UART_8N1;//8 bit mode
+    UART0_CTL_R =UART0_ENABLE | UART_TXE | UART_RXE;//Enable UART/TX/RX
+}
+/**
+ * @brief Sends a single byte through UART0
+ * @param data The byte to be transmitted
+ */
+void UART0_SendByte(uint8_t data)
+{
+    while(UART0_FR_R & (0x1<<5));//wait until fifo is not full
+    UART0_DR_R= data;
+}
+/**
+ * @brief Receives a single byte from UART0
+ * @return The received byte
+ */
+uint8_t UART0_ReceiveByte(void)
+{
+    while(UART0_FR_R & (0x1<<4));// Wait until the receive FIFO is not empty
+    return UART0_DR_R;
+}
+/**
+ * @brief Sends a string over UART0
+ * @param str Null-terminated string
+ */
+void UART0_SendString(const uint8_t *str)
+{
+    uint32_t i =0;
+    while(str[i] != '\0')
+    {
+        UART0_SendByte(str[i]);
+        i++;
+    }
+}
+/**
+ * @brief Sends an integer over UART0 (converts to string first)
+ * @param num Number to send
+ */
+void UART0_SendNumber(int32_t num) {
+    uint8_t buffer[12]; // Enough for -2,147,483,648 to 2,147,483,647
+    IntToStr(num, buffer);
+    UART0_SendString(buffer);
+}
+

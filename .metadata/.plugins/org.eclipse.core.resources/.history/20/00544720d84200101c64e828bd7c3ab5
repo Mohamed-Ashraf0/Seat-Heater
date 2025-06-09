@@ -1,0 +1,71 @@
+#include<stdint.h>
+#include "uart0.h"
+#include "adc0-1.h"
+#include "GPTM.h"
+#include "GPIO.h"
+uint32_t gPassengerTemp;
+uint32_t gDriverTemp;
+int main(void)
+{
+GPIO_Init();
+UART0_Init();
+ADC0_Init();
+ADC1_Init();
+GPTM_WTimer0Init();
+ADC0_StartConv();
+ADC1_StartConv();
+int i;
+int j;
+while(1)
+{
+    ADC0_StartConv();
+    ADC1_StartConv();
+    UART0_SendString("passenger seat temperature:- ");
+    UART0_SendNumber(gPassengerTemp);
+    UART0_SendString(" \r\n\n**************************************\r\n\n");
+    UART0_SendString("driver seat temperature:- ");
+    UART0_SendNumber(gDriverTemp);
+    UART0_SendString(" \r\n\n**************************************\r\n\n");
+    UART0_SendString("current time:- ");
+    UART0_SendNumber(GPTM_WTimer0Read());
+    UART0_SendString(" \r\n\n**************************************\r\n\n");
+    for(i=0;i<10000;i++){
+        for(j=0;j<100;j++)
+        {
+
+        }
+    }
+}
+}
+void ADC0SS0_HANDLER (void)
+{
+    ADC0_ISC_R|=(1<<0);
+    gPassengerTemp=(ADC0_SSFIFO0_R*TARGET_MAX)/ADC_MAX;
+}
+void ADC1SS0_HANDLER (void)
+{
+    ADC1_ISC_R|=(1<<0);
+    gDriverTemp=(ADC1_SSFIFO0_R*TARGET_MAX)/ADC_MAX;
+}
+void GPIOPortF_Handler(void)
+{
+    uint8_t status = GPIO_PORTF_RIS_R;
+
+    if (status & 0x10) {  // SW1 (PF4)
+        GPIO_PORTF_ICR_R = 0x10;
+        delay_ms(50);     // Debounce delay
+        if ((GPIO_PORTF_DATA_R & 0x10) == 0) {  // Still pressed?
+            AllLedon();
+            GPIO_PORTF_ICR_REG   |= (1<<4);   //Clear Trigger flag for PF4 (Interrupt Flag)
+        }
+    }
+
+    if (status & 0x01) {  // SW2 (PF0)
+        GPIO_PORTF_ICR_R = 0x01;
+        delay_ms(50);     // Debounce delay
+        if ((GPIO_PORTF_DATA_R & 0x01) == 0) {  // Still pressed?
+            AllLedoff();
+            GPIO_PORTF_ICR_REG   |= (1<<0);   //Clear Trigger flag for PF0 (Interrupt Flag)
+        }
+    }
+}

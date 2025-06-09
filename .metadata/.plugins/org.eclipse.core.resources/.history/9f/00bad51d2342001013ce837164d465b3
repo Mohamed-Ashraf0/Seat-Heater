@@ -1,0 +1,47 @@
+/*
+ *  uart0.h
+ *
+ *  Created on: June 5, 2025
+ *      Author: Mohamed Ashraf
+ */
+#ifndef UART0_H_
+#define UART0_H_
+#include<stdint.h>
+#include"tm4c123gh6pm.h"
+#include"Macros.h"
+/* ------------------ Macro Declarations ---------------------------*/
+#define UART0_ENABLE     (0x01)  // UART Enable bit
+#define UART_TXE         (0x01 << 8)  // Transmit Enable
+#define UART_RXE         (0x01 << 9)  // Receive Enable
+#define UART_8N1         (0x3 << 5)  // 8-bit data, no parity, 1 stop bit
+//|  (0x1 << 4)
+/* ------------------ Macro Declarations ---------------------------*/
+/* ------------------ Software Interfaces Declarations -------------*/
+/**
+ * @brief Initializes UART0 with 9600 baud rate (8N1 configuration)
+ *        using PA0 (RX) and PA1 (TX) pins
+ */
+void UART0_Init(void);
+/**
+ * @brief Sends a single byte through UART0
+ * @param data The byte to be transmitted
+ */
+void UART0_SendByte(uint8_t data);
+/**
+ * @brief Receives a single byte from UART0
+ * @return The received byte
+ */
+uint8_t UART0_ReceiveByte(void);
+/**
+ * @brief Sends a string over UART0
+ * @param str Null-terminated string
+ */
+void UART0_SendString(const uint8_t *str);
+/**
+ * @brief Sends an integer over UART0 (converts to string first)
+ * @param num Number to send
+ */
+void UART0_SendNumber(int32_t num);
+/* ------------------ Software Interfaces Declarations -------------*/
+
+#endif

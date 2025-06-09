@@ -1,0 +1,91 @@
+/**
+ * main.c
+ */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "event_groups.h"
+#include "semphr.h"
+#include <stdint.h>
+#include "uart0.h"
+#include "adc0-1.h"
+#include "GPTM.h"
+#include "GPIO.h"
+
+/**
+ * @brief Functions that implement FreeRTOS tasks.
+ */
+static void prvReceiverTask( void * pvParams );
+/*-----------------------------------------------------------*/
+/**
+ * @brief Queue used in the program.
+ */
+static QueueHandle_t xQueue;
+/**
+ * @brief Counter used in the program.
+ */
+static UBaseType_t uxCounter = 0;
+/*-----------------------------------------------------------*/
+int main(void)
+{
+    UART0_Init();
+    BaseType_t xTaskCreationResult = pdFAIL;
+    xTaskCreationResult=xTaskCreate(
+            prvReceiverTask,
+            "Receiver",
+            configMINIMAL_STACK_SIZE,
+            NULL,
+            tskIDLE_PRIORITY ,
+            NULL);
+    configASSERT(xTaskCreationResult == pdPASS );
+    xQueue =xQueueCreate(
+            5,//uxQueueLength
+            sizeof(UBaseType_t)//uxItemSize
+            );
+    vTaskStartScheduler();
+
+    for(;;) {} // Should never reach here
+}
+
+static void prvReceiverTask( void * pvParams )
+{
+    BaseType_t xQueueSendResult;
+    UBaseType_t uxReceivedValue ;
+
+    (void)pvParams;
+    //uint64_t i;
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    for(;;) {
+        xQueueReceive(xQueue,//my queue
+                     &uxReceivedValue,//data to recve
+                     portMAX_DELAY);//xTicksToWait
+        UART0_SendString("Received :-");
+        UART0_SendNumber(uxReceivedValue);
+        UART0_SendString("    items in queue :-");
+        UART0_SendNumber(uxQueueMessagesWaiting( xQueue ) );
+        UART0_SendString(" \r\n\n**************************************\r\n\n");
+    }
+}
+void vApplicationTickHook( void )
+{
+    BaseType_t xQueueSendResult = pdFAIL;
+    BaseType_t xHighPriorityTaskWoken = pdFALSE;
+
+    uxCounter++;
+
+    if( ( uxCounter % 1000 ) == 0 )
+    {
+        xQueueSendResult=xQueueSendFromISR(xQueue,
+                                           &uxCounter,
+                                           &xHighPriorityTaskWoken);
+        configASSERT( xQueueSendResult == pdPASS );
+        UART0_SendString("sent item :-");
+        UART0_SendNumber(uxCounter);
+        UART0_SendString(" \r\n\n**************************************\r\n\n");
+    }
+
+    portYIELD_FROM_ISR( xHighPriorityTaskWoken );//ensures that, if needed, a context switch happens right after the ISR.
+}
+
+void ADC0SS0_HANDLER(void) {}
+void ADC1SS0_HANDLER(void) {}
+void GPIOPortF_Handler(void) {}

@@ -1,0 +1,663 @@
+ /*
+ *  main.c
+ *
+ *  Created on: June 7, 2025
+ *      Author: Mohamed Ashraf
+ */
+/* Kernel includes. */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "event_groups.h"
+#include "queue.h"
+//#include "timers.h"
+//#include "stream_buffer.h"
+//#include "message_buffer.h"
+/* MCAL includes. */
+#include <stdint.h>//uint8_t   uint32_t
+#include "uart0.h"
+#include "adc0-1.h"
+#include "GPTM.h"
+#include "GPIO.h"
+#include"tm4c123gh6pm.h"
+///////////////////////* Defined Macros*///////////////////////
+//macro for circular increment for heating state with each sw presssed
+#define CIRCULAR_INC_HEATING_LEVEL(level) \
+    (level) = (HeatingLevel)(((int)(level) + 1) % mainHEATING_LEVEL_COUNT)
+/**
+ * @brief Definitions of event bits.
+ */
+#define mainSW1_PRESSED_BIT           ( 1UL << 0UL )//sw1 pressed by driver
+#define mainSW2_PRESSED_BIT           ( 1UL << 1UL )//sw2 pressed by passenger
+#define mainData_TO_DISPLAY_BIT       ( 1UL << 2UL )//any of driver or passenger (current temp or desired temo or intensity )changed
+/*#define mainDRIVER_G_40_BIT           ( 1UL << 3UL )
+#define mainDRIVER_L_5_BIT            ( 1UL << 4UL )
+#define mainPassenger_G_40_BIT        ( 1UL << 5UL )
+#define mainPassenger_L_5_BIT        ( 1UL << 6UL )*/
+/**
+ * @brief Mutex used in this program.
+ */
+static SemaphoreHandle_t xDriverHeatingLevelMutex= NULL;
+static SemaphoreHandle_t xPassengerHeatingLevelMutex= NULL;
+static SemaphoreHandle_t xDisplayMutex= NULL;
+
+/**
+ * @brief Semaphore used in this program.
+ */
+//should be mutex but it is used from ISR so will be binary semaphore
+static SemaphoreHandle_t xDriverTempValueSemphr= NULL;
+static SemaphoreHandle_t xPassengerTempValueSemphr= NULL;
+//should be mutex but it is used from ISR so will be binary semaphore
+static SemaphoreHandle_t xDriverHeaterStateSemphr= NULL;
+static SemaphoreHandle_t xPassengerHeaterStateSemphr= NULL;
+/**
+ * @brief Event group used in this program.
+ */
+static EventGroupHandle_t xEventGroup = NULL;
+
+/**
+ * @brief Queue used in the program.
+ */
+static QueueHandle_t xDriverDiagnosticInfoQueue;
+static QueueHandle_t xPassengerDiagnosticInfoQueue;
+static QueueHandle_t xDriverIntensityQueue;
+static QueueHandle_t xPassengerIntensityQueue;
+//////////////////////*Typedefs*////////////////////////////
+typedef enum {
+    mainDriver_G_40,
+    mainDriver_L_5,
+    mainPassenger_G_40,
+    mainPassenger_L_5
+} ErrorType;
+typedef enum {
+    mainHIGH_INTENSITY,
+    mainMEDIUM_INTENSITY,
+    mainLOW_INTENSITY,
+    mainNO_INTENSITY,
+    mainERROR
+} HeaterState;
+typedef enum {
+    mainOFF=0,
+    mainDESIRED_25,
+    mainDESIRED_30,
+    mainDESIRED_35,
+    // Sentinel value for bounds checking
+    mainHEATING_LEVEL_COUNT
+} HeatingLevel;
+//passed in queue
+typedef struct
+{
+    ErrorType error;
+    HeaterState LastState;
+    uint32_t TimeStamp;
+} DiagnosticsData;
+////////////////////////passed as task parameter//////////////////////
+typedef struct
+{
+    void (*adcConv)(void);
+} TempTaskParameter;
+typedef struct
+{
+    xSemaphoreHandle* TempValueSemphr;
+    xSemaphoreHandle* HeaterStateSemphr;
+    xSemaphoreHandle* HeatingLevelMutex;
+    xQueueHandle* IntensityQueue;
+    HeaterState* State;
+    HeatingLevel* Level;
+    uint8_t* Temp;
+} IntensityControllerTaskParameter;
+
+typedef struct
+{
+    xQueueHandle* IntensityQueue;
+    void (*LedsOffFun)(void);//external or built in leds based on driver or passenger
+    void (*BlueLedOnFun)(void);//external or built in leds based on driver or passenger
+    void (*GreenLedOnFun)(void);//external or built in leds based on driver or passenger
+    void (*RedLedOnFun)(void);//external or built in leds based on driver or passenger
+} HeaterControllerTaskParameter;
+typedef struct
+{
+    xQueueHandle* IntensityQueue;
+    xSemaphoreHandle* HeaterStateSemphr;
+    HeaterState* State;
+    void (*LedsOffFun)(void);//external or built in leds based on driver or passenger
+    void (*RedLedOnFun)(void);//external or built in leds based on driver or passenger
+} ErrorHandlerParameter;
+/*Global Variables*/
+HeaterState gDriverHeaterState=mainNO_INTENSITY;
+HeaterState gPassengerHeaterState=mainNO_INTENSITY;
+HeatingLevel gDriverHeatingLevel=mainOFF;
+HeatingLevel gPassengerHeatingLevel=mainOFF;
+uint8_t gDriverSeatTemp;
+uint8_t gPassengerSeatTemp;
+TempTaskParameter DriverTempTaskParameter ={ADC1_StartConv};
+TempTaskParameter PassengerTempTaskParameter={ADC0_StartConv};
+uint8_t Error_Flag_adc0=0;//only error at first occur of temperature out of boundary
+uint8_t Error_Flag_adc1=0;//only error at first occur of temperature out of boundary
+IntensityControllerTaskParameter DriverIntensityControllerTaskParameter ={&xDriverTempValueSemphr,
+                                                                          &xDriverHeaterStateSemphr,
+                                                                          &xDriverHeatingLevelMutex,
+                                                                          &xDriverIntensityQueue,
+                                                                          &gDriverHeaterState,
+                                                                          &gDriverHeatingLevel,
+                                                                          &gDriverSeatTemp
+                                                                          };
+IntensityControllerTaskParameter PassengerIntensityControllerTaskParameter ={&xPassengerTempValueSemphr,
+                                                                          &xPassengerHeaterStateSemphr,
+                                                                          &xPassengerHeatingLevelMutex,
+                                                                          &xPassengerIntensityQueue,
+                                                                          &gPassengerHeaterState,
+                                                                          &gPassengerHeatingLevel,
+                                                                          &gPassengerSeatTemp
+                                                                          };
+HeaterControllerTaskParameter DriverHeaterControllerTaskParameter        ={&xDriverIntensityQueue,
+                                                                          AllLedOff,
+                                                                          BlueLedOn,
+                                                                          GreenLedOn,
+                                                                          RedLedOn
+                                                                          };
+HeaterControllerTaskParameter PassengerHeaterControllerTaskParameter     ={&xPassengerIntensityQueue,
+                                                                           AllLedOff,//TO DO change to external Leds
+                                                                           ExtBlueLedOn,//TO DO change to external Leds
+                                                                           ExtGreenLedOn,//TO DO change to external Leds
+                                                                           ExtRedLedOn//TO DO change to external Leds
+                                                                          };
+ErrorHandlerParameter DriverErrorHandlerParameter                        ={&xDriverDiagnosticInfoQueue,
+                                                                           &xDriverHeaterStateSemphr,
+                                                                           &gDriverHeaterState,
+                                                                           AllLedOff,
+                                                                           RedLedOn};
+ErrorHandlerParameter PassengerErrorHandlerParameter                        ={&xPassengerDiagnosticInfoQueue,
+                                                                              &xPassengerHeaterStateSemphr,
+                                                                              &gPassengerHeaterState,
+                                                                              ExtAllLedOff,
+                                                                              ExtRedLedOn};
+/* Diagnostic array section in RAM */
+DiagnosticsData DiagnosticArray[10];
+uint8_t DiagnosticIndex = 0;
+uint32_t ullTasksOutTime[11+1];//Runtime Measurment
+uint32_t ullTasksInTime[11+1];//Runtime Measurment
+uint32_t ullTasksTotalTime[11+1];//Runtime Measurment
+//////////////////////////* Task Handler*/////////////////////
+TaskHandle_t xDriverTempReadTaskHandle;
+TaskHandle_t xPassengerTempReadTaskHandle;
+TaskHandle_t xDesiredTempControllerTaskHandle;
+TaskHandle_t xDriverHeaterControllerTaskHandle;
+TaskHandle_t xPassengerHeaterControllerTaskHandle;
+TaskHandle_t xDriverHeaterIntensityControllerTaskHandle;
+TaskHandle_t xPassengerHeaterIntensityControllerTaskHandle;
+TaskHandle_t xDriverErrorHandlerTaskHandle;
+TaskHandle_t xPassengerErrorHandlerTaskHandle;
+TaskHandle_t xDisplayHeaterInfoTaskHandle;
+TaskHandle_t xDisplayRuntimeMeasurmentTaskHandle;
+///////////////////////////* Function Prototypes*///////////////////
+static void prvSetupHardware(void);
+///////////////////////////*Tasks*//////////////////
+static void vTempReadTask(void *pvParameters);
+static void vDesiredTempControllerTask(void *pvParameters);
+static void vHeaterIntensityControllerTask(void *pvParameters);
+static void vHeaterControllerTask(void *pvParameters);
+static void vErrorHandlerTask(void *pvParameters);
+static void vDisplayHeaterInfoTask(void *pvParameters);
+static void vDisplayRuntimeMeasurmentTask(void *pvParameters);
+int main(void)
+{
+    //////////////////////Tasks//////////////////////////////////
+    ExtGreenLedOn();
+    prvSetupHardware();
+    xTaskCreate(vTempReadTask, "Driver Seat sensor", 64, (void*)&DriverTempTaskParameter, 4, &xDriverTempReadTaskHandle);
+    xTaskCreate(vTempReadTask, "Passenger Seat Sensor", 64, (void*)&PassengerTempTaskParameter, 4, &xPassengerTempReadTaskHandle);
+    xTaskCreate(vDesiredTempControllerTask, "Desired Temp Button", 64, NULL, 5, &xDesiredTempControllerTaskHandle);
+    xTaskCreate(vHeaterIntensityControllerTask, "Driver Heater Intensity", 128, (void*)&DriverIntensityControllerTaskParameter, 2, &xDriverHeaterIntensityControllerTaskHandle);
+    xTaskCreate(vHeaterIntensityControllerTask, "Passenger Heater Intensity", 128, (void*)&PassengerIntensityControllerTaskParameter, 2, &xPassengerHeaterIntensityControllerTaskHandle);
+    xTaskCreate(vHeaterControllerTask, "Driver Heater Controller", 64, (void*)&DriverHeaterControllerTaskParameter, 3, &xDriverHeaterControllerTaskHandle);
+    xTaskCreate(vHeaterControllerTask, "Passenger Heater Controller", 64, (void*)&PassengerHeaterControllerTaskParameter, 3, &xPassengerHeaterControllerTaskHandle);
+    xTaskCreate(vErrorHandlerTask, "Driver Error Handler", 64, (void*)&DriverErrorHandlerParameter, 5, &xDriverErrorHandlerTaskHandle);
+    xTaskCreate(vErrorHandlerTask, "Passenger Error Handler", 64, (void*)&PassengerErrorHandlerParameter, 5, &xPassengerErrorHandlerTaskHandle);
+    xTaskCreate(vDisplayHeaterInfoTask, "Display Heater Info", 128, NULL, 1, &xDisplayHeaterInfoTaskHandle);
+    xTaskCreate(vDisplayRuntimeMeasurmentTask, "Display Runtime Measurement", 128, NULL, 1, &xDisplayRuntimeMeasurmentTaskHandle);
+    /////////////////////Tags For Runtime Measurment//////////////
+    vTaskSetApplicationTaskTag(xDriverTempReadTaskHandle, (TaskHookFunction_t) 1);
+    vTaskSetApplicationTaskTag(xPassengerTempReadTaskHandle, (TaskHookFunction_t) 2);
+    vTaskSetApplicationTaskTag(xDesiredTempControllerTaskHandle, (TaskHookFunction_t) 3);
+    vTaskSetApplicationTaskTag(xDriverHeaterIntensityControllerTaskHandle, (TaskHookFunction_t) 4);
+    vTaskSetApplicationTaskTag(xPassengerHeaterIntensityControllerTaskHandle, (TaskHookFunction_t) 5);
+    vTaskSetApplicationTaskTag(xDriverHeaterControllerTaskHandle, (TaskHookFunction_t) 6);
+    vTaskSetApplicationTaskTag(xPassengerHeaterControllerTaskHandle, (TaskHookFunction_t) 7);
+    vTaskSetApplicationTaskTag(xDriverErrorHandlerTaskHandle, (TaskHookFunction_t) 8);
+    vTaskSetApplicationTaskTag(xPassengerErrorHandlerTaskHandle, (TaskHookFunction_t) 9);
+    vTaskSetApplicationTaskTag(xDisplayHeaterInfoTaskHandle, (TaskHookFunction_t) 10);
+    vTaskSetApplicationTaskTag(xDisplayRuntimeMeasurmentTaskHandle, (TaskHookFunction_t) 11);
+    ////////////////////Mutex///////////////////////////////////
+    xDriverHeatingLevelMutex=xSemaphoreCreateMutex();
+    xPassengerHeatingLevelMutex=xSemaphoreCreateMutex();
+    xDisplayMutex=xSemaphoreCreateMutex();
+    ///////////////////Semaphore////////////////////////////////
+    xDriverTempValueSemphr=xSemaphoreCreateBinary();
+    xSemaphoreGive(xDriverTempValueSemphr);//initially set to work as mutex
+    xPassengerTempValueSemphr=xSemaphoreCreateBinary();
+    xSemaphoreGive(xPassengerTempValueSemphr);//initially set to work as mutex
+    xDriverHeaterStateSemphr=xSemaphoreCreateBinary();
+    xSemaphoreGive(xDriverHeaterStateSemphr);//initially set to work as mutex
+    xPassengerHeaterStateSemphr=xSemaphoreCreateBinary();
+    xSemaphoreGive(xPassengerHeaterStateSemphr);//initially set to work as mutex
+    //////////////////EventGroups//////////////////////////////
+    xEventGroup = xEventGroupCreate();
+    /////////////////Queues/////////////////////////////////////
+    xDriverDiagnosticInfoQueue= xQueueCreate(5,sizeof(DiagnosticsData));
+    xPassengerDiagnosticInfoQueue= xQueueCreate(5,sizeof(DiagnosticsData));
+    xDriverIntensityQueue=xQueueCreate(5,sizeof(HeaterState));
+    xPassengerIntensityQueue=xQueueCreate(5,sizeof(HeaterState));
+
+    /* Start the scheduler so the created tasks start executing. */
+    vTaskStartScheduler();
+    for (;;) {};// Should never reach here
+}
+static void prvSetupHardware(void)
+{
+    GPIO_Init();
+    UART0_Init();
+    ADC0_Init();
+    ADC1_Init();
+    GPTM_WTimer0Init();
+}
+static void vTempReadTask(void *pvParameters)
+{
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    TempTaskParameter * pTaskInformation = (TempTaskParameter *) pvParameters;
+
+    for(;;)
+    {
+        pTaskInformation->adcConv();
+        vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(500));
+    }
+}
+static void vDesiredTempControllerTask(void *pvParameters)
+{
+    EventBits_t xEventBitsValue;
+    (void) pvParameters;
+
+    for (;;)
+    {
+        // Wait for SW1 or SW2 press event
+        xEventBitsValue = xEventGroupWaitBits(
+            xEventGroup,
+            (mainSW1_PRESSED_BIT | mainSW2_PRESSED_BIT),
+            pdTRUE,    // Clear bits on exit
+            pdFALSE,   // Wait for any
+            portMAX_DELAY
+        );
+
+        // Debounce delay
+        vTaskDelay(pdMS_TO_TICKS(50));
+
+        // Re-check the GPIO pin to confirm it's still pressed
+        if ((xEventBitsValue & mainSW1_PRESSED_BIT) && ((GPIO_PORTF_DATA_R & (1 << 4)) == 0))  // PF4
+        {
+            if (xSemaphoreTake(xDriverHeatingLevelMutex, portMAX_DELAY) == pdTRUE)
+            {
+                CIRCULAR_INC_HEATING_LEVEL(gDriverHeatingLevel);
+                xSemaphoreGive(xDriverHeatingLevelMutex);
+            }
+        }
+        else if ((xEventBitsValue & mainSW2_PRESSED_BIT) && ((GPIO_PORTF_DATA_R & (1 << 0)) == 0))  // PF0
+        {
+            if (xSemaphoreTake(xPassengerHeatingLevelMutex, portMAX_DELAY) == pdTRUE)
+            {
+                CIRCULAR_INC_HEATING_LEVEL(gPassengerHeatingLevel);
+                xSemaphoreGive(xPassengerHeatingLevelMutex);
+            }
+        }
+
+        // Update display
+        xEventGroupSetBits(xEventGroup, mainData_TO_DISPLAY_BIT);
+    }
+}
+static void vHeaterIntensityControllerTask(void *pvParameters)
+{
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    uint32_t Desired_Temp;
+    const uint8_t temps[] = {0, 35, 30, 25};
+    IntensityControllerTaskParameter * Data=(IntensityControllerTaskParameter *)pvParameters;
+    xSemaphoreHandle TempValueSemphr=*(Data->TempValueSemphr);
+    xSemaphoreHandle HeaterStateSemphr=*(Data->HeaterStateSemphr);
+    xSemaphoreHandle HeatingLevelMutex=*(Data->HeatingLevelMutex);
+    xQueueHandle IntensityQueue=*(Data->IntensityQueue);
+    HeaterState* State=Data->State;
+    HeatingLevel* Level=Data->Level;
+    uint8_t* Temp=Data->Temp;
+    for(;;)
+    {
+    xSemaphoreTake(TempValueSemphr, portMAX_DELAY);
+    xSemaphoreTake(HeaterStateSemphr, portMAX_DELAY);
+    xSemaphoreTake(HeatingLevelMutex, portMAX_DELAY);
+    Desired_Temp=temps[*Level];
+    if((*Temp)<5 ||(*Temp)>45)
+    {
+        (*State)=mainERROR;
+    }
+    else if((*Temp)+10<=Desired_Temp)
+    {
+        (*State)=mainHIGH_INTENSITY;
+    }
+    else if((*Temp)+5<=Desired_Temp)
+    {
+        (*State)=mainMEDIUM_INTENSITY;
+    }
+    else if((*Temp)+2<=Desired_Temp)
+    {
+        (*State)=mainLOW_INTENSITY;
+    }
+    else
+    {
+        (*State)=mainNO_INTENSITY;
+    }
+    xQueueSend(IntensityQueue, State, portMAX_DELAY);
+    xSemaphoreGive(TempValueSemphr);
+    xSemaphoreGive(HeaterStateSemphr);
+    xSemaphoreGive(HeatingLevelMutex);
+    vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS( 200 ) );
+    }
+}
+static void vHeaterControllerTask(void *pvParameters)
+{
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    uint8_t intensity;
+    HeaterControllerTaskParameter * Data=(HeaterControllerTaskParameter *)pvParameters;
+    xQueueHandle IntensityQueue=*(Data->IntensityQueue);
+    for (;;)
+    {
+        xQueueReceive(IntensityQueue, &intensity, portMAX_DELAY);
+        switch(intensity)
+        {
+        case(mainHIGH_INTENSITY):
+        (Data->LedsOffFun)();
+        (Data->BlueLedOnFun)();
+        (Data->GreenLedOnFun)();
+        break;
+        case(mainMEDIUM_INTENSITY):
+        (Data->LedsOffFun)();
+        (Data->BlueLedOnFun)();
+        break;
+        case(mainLOW_INTENSITY):
+        (Data->LedsOffFun)();
+        (Data->GreenLedOnFun)();
+        break;
+        case(mainNO_INTENSITY):
+        (Data->LedsOffFun)();
+        break;
+        case(mainERROR):
+        (Data->LedsOffFun)();
+        (Data->RedLedOnFun)();
+        break;
+        }
+        // Update display
+        xEventGroupSetBits(xEventGroup, mainData_TO_DISPLAY_BIT);
+        vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS( 200 ) );
+    }
+}
+static void vErrorHandlerTask(void *pvParameters)
+{
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    ErrorHandlerParameter * Data = (ErrorHandlerParameter *) pvParameters;
+    xSemaphoreHandle HeaterStateSemphr=*(Data->HeaterStateSemphr);
+    xQueueHandle DiagnosticsQueue=*(Data->IntensityQueue);
+    HeaterState* State=Data->State;
+    DiagnosticsData Diag_Data;
+    for (;;)
+    {
+        xQueueReceive(DiagnosticsQueue,//my queue
+                      &Diag_Data,//data recived
+                      portMAX_DELAY);//xTicksToWait
+        if(DiagnosticIndex < 10) {  // Only write if space available
+        DiagnosticArray[DiagnosticIndex]=Diag_Data;
+        DiagnosticIndex++;
+        }
+        xSemaphoreTake(HeaterStateSemphr, portMAX_DELAY);
+        (*State)=mainERROR;
+        xSemaphoreGive(HeaterStateSemphr);
+        (Data->LedsOffFun)();
+        (Data->RedLedOnFun)();
+        xEventGroupSetBits(xEventGroup, mainData_TO_DISPLAY_BIT);
+        vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS( 200 ) );
+    }
+}
+static void vDisplayHeaterInfoTask(void *pvParameters)
+{
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    for (;;)
+    {
+        xEventGroupWaitBits(xEventGroup, mainData_TO_DISPLAY_BIT,pdTRUE,pdTRUE,portMAX_DELAY);
+        xSemaphoreTake(xDisplayMutex,portMAX_DELAY);
+        UART0_SendString("Driver:\r\nSeat Temperature = ");
+        UART0_SendNumber(gDriverSeatTemp);
+        UART0_SendString(" C\r\nDesired Heating Temperature = ");
+        switch(gDriverHeatingLevel)
+        {
+        case(mainOFF):
+                UART0_SendString("0");
+                break;
+        case(mainDESIRED_35):
+                UART0_SendString("35" );
+                break;
+        case(mainDESIRED_30):
+                UART0_SendString("30");
+                break;
+        case(mainDESIRED_25):
+                UART0_SendString("25");
+                break;
+        }
+        UART0_SendString(" C\r\nThe Heater State is ");
+        switch(gDriverHeaterState)
+        {
+        case(mainHIGH_INTENSITY):
+                UART0_SendString("HIGH Intensity");
+                break;
+        case(mainMEDIUM_INTENSITY):
+                UART0_SendString("MEDIUM Intensity");
+                break;
+        case(mainLOW_INTENSITY):
+                UART0_SendString("LOW Intensity" );
+                break;
+        case(mainNO_INTENSITY):
+                UART0_SendString("NO Intensity");
+                break;
+        case(mainERROR):
+                UART0_SendString("ERROR");
+                break;
+        }
+        UART0_SendString(" \r\n\n==================================\r\n\n");
+        UART0_SendString("Passenger:\r\nSeat Temperature = ");
+        UART0_SendNumber(gPassengerSeatTemp);
+        UART0_SendString(" C\r\nDesired Heating Temperature = ");
+        switch(gPassengerHeatingLevel)
+        {
+        case(mainOFF):
+                UART0_SendString("0");
+                break;
+        case(mainDESIRED_35):
+                UART0_SendString("35" );
+                break;
+        case(mainDESIRED_30):
+                UART0_SendString("30");
+                break;
+        case(mainDESIRED_25):
+                UART0_SendString("25");
+                break;
+        }
+        UART0_SendString(" C\r\nThe Heater State is ");
+        switch(gPassengerHeaterState)
+        {
+        case(mainHIGH_INTENSITY):
+                UART0_SendString("HIGH Intensity");
+                break;
+        case(mainMEDIUM_INTENSITY):
+                UART0_SendString("MEDIUM Intensity");
+                break;
+        case(mainLOW_INTENSITY):
+                UART0_SendString("LOW Intensity" );
+                break;
+        case(mainNO_INTENSITY):
+                UART0_SendString("NO Intensity");
+                break;
+        case(mainERROR):
+                UART0_SendString("ERROR");
+                break;
+        }
+        UART0_SendString(" \r\n\n==================================\r\n\n");
+        xSemaphoreGive(xDisplayMutex);
+        vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS( 2000 ) );
+    }
+}
+static void vDisplayRuntimeMeasurmentTask(void *pvParameters)
+{
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    uint32_t TotalTaskTime=0;
+    uint8_t Cpu_Load;
+    uint8_t Counter;
+    for (;;)
+    {
+        for(Counter = 1; Counter < 11; Counter++)
+        {
+            TotalTaskTime += ullTasksTotalTime[Counter];
+        }
+        Cpu_Load = (TotalTaskTime * 100) /  GPTM_WTimer0Read();
+        xSemaphoreTake(xDisplayMutex,portMAX_DELAY);
+        UART0_SendString("CPU Load is ");
+        UART0_SendNumber(Cpu_Load);
+        UART0_SendString(" \r\n\n==================================\r\n\n");
+        xSemaphoreGive(xDisplayMutex);
+     vTaskDelayUntil(&xLastWakeTime, 3000);
+    }
+
+}
+void ADC0SS0_HANDLER(void)
+{
+    BaseType_t xHighPriorityTaskWoken0 = pdFALSE;
+    BaseType_t xHighPriorityTaskWoken1 = pdFALSE;
+    BaseType_t xHighPriorityTaskWoken2 = pdFALSE;
+    BaseType_t xHighPriorityTaskWoken3 = pdFALSE;
+    BaseType_t xHighPriorityTaskWoken4 = pdFALSE;
+    BaseType_t xHighPriorityTaskWoken5 = pdFALSE;
+    BaseType_t xHighPriorityTaskWoken6 = pdFALSE;
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+    DiagnosticsData Data;
+
+    // Take both semaphores before accessing shared resources
+    xSemaphoreTakeFromISR(xPassengerTempValueSemphr, &xHighPriorityTaskWoken0);
+    xSemaphoreTakeFromISR(xPassengerHeaterStateSemphr, &xHighPriorityTaskWoken1);
+
+    gPassengerSeatTemp = ADC0_Read();
+
+    if (gPassengerSeatTemp < 5 && Error_Flag_adc0==0 )
+    {
+        Data.LastState = gPassengerHeaterState;
+        Data.error = mainPassenger_L_5;
+        Data.TimeStamp = GPTM_WTimer0Read();
+        xQueueSendFromISR(xPassengerDiagnosticInfoQueue, &Data, &xHighPriorityTaskWoken2);
+        Error_Flag_adc0=1;
+    }
+    else if (gPassengerSeatTemp > 40 && Error_Flag_adc0==0)
+    {
+        Data.LastState = gPassengerHeaterState;
+        Data.error = mainPassenger_G_40;
+        Data.TimeStamp = GPTM_WTimer0Read();
+        xQueueSendFromISR(xPassengerDiagnosticInfoQueue, &Data, &xHighPriorityTaskWoken3);
+        Error_Flag_adc0=1;
+    }
+    else if(gPassengerSeatTemp >= 5 && gPassengerSeatTemp <=40)
+    {
+        Error_Flag_adc0=0;
+    }
+
+    xSemaphoreGiveFromISR(xPassengerTempValueSemphr, &xHighPriorityTaskWoken4);
+    xSemaphoreGiveFromISR(xPassengerHeaterStateSemphr, &xHighPriorityTaskWoken5);
+
+    xEventGroupSetBitsFromISR(xEventGroup, mainData_TO_DISPLAY_BIT, &xHighPriorityTaskWoken6);
+
+    ADC0_ISC_R |= (1 << 0);  // Clear interrupt
+
+    // Merge all task-woken flags
+    xHigherPriorityTaskWoken =
+        xHighPriorityTaskWoken0 || xHighPriorityTaskWoken1 ||
+        xHighPriorityTaskWoken2 || xHighPriorityTaskWoken3 ||
+        xHighPriorityTaskWoken4 || xHighPriorityTaskWoken5 ||
+        xHighPriorityTaskWoken6;
+
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}
+
+void ADC1SS0_HANDLER(void)
+{
+    BaseType_t xHighPriorityTaskWoken0 = pdFALSE;
+    BaseType_t xHighPriorityTaskWoken1 = pdFALSE;
+    BaseType_t xHighPriorityTaskWoken2 = pdFALSE;
+    BaseType_t xHighPriorityTaskWoken3 = pdFALSE;
+    BaseType_t xHighPriorityTaskWoken4 = pdFALSE;
+    BaseType_t xHighPriorityTaskWoken5 = pdFALSE;
+    BaseType_t xHighPriorityTaskWoken6 = pdFALSE;
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+    DiagnosticsData Data;
+
+    // Take both semaphores before accessing shared resources
+    xSemaphoreTakeFromISR(xDriverTempValueSemphr, &xHighPriorityTaskWoken0);
+    xSemaphoreTakeFromISR(xDriverHeaterStateSemphr, &xHighPriorityTaskWoken1);
+
+    gDriverSeatTemp = ADC1_Read();
+
+    if (gDriverSeatTemp < 5 && Error_Flag_adc1==0)
+    {
+        Data.LastState = gDriverHeaterState;
+        Data.error = mainDriver_L_5;
+        Data.TimeStamp = GPTM_WTimer0Read();
+        xQueueSendFromISR(xDriverDiagnosticInfoQueue, &Data, &xHighPriorityTaskWoken2);
+        Error_Flag_adc1=1;
+    }
+    else if (gDriverSeatTemp > 40 && Error_Flag_adc1==0)
+    {
+        Data.LastState = gDriverHeaterState;
+        Data.error = mainDriver_G_40;
+        Data.TimeStamp = GPTM_WTimer0Read();
+        xQueueSendFromISR(xDriverDiagnosticInfoQueue, &Data, &xHighPriorityTaskWoken3);
+        Error_Flag_adc1=1;
+    }
+    else if(gDriverSeatTemp >= 5 && gDriverSeatTemp <=40)
+    {
+        Error_Flag_adc1=0;
+    }
+    xSemaphoreGiveFromISR(xDriverTempValueSemphr, &xHighPriorityTaskWoken4);
+    xSemaphoreGiveFromISR(xDriverHeaterStateSemphr, &xHighPriorityTaskWoken5);
+
+    xEventGroupSetBitsFromISR(xEventGroup, mainData_TO_DISPLAY_BIT, &xHighPriorityTaskWoken6);
+
+    ADC1_ISC_R|=(1<<0);  // Clear interrupt
+
+    // Merge all task-woken flags
+    xHigherPriorityTaskWoken =
+        xHighPriorityTaskWoken0 || xHighPriorityTaskWoken1 ||
+        xHighPriorityTaskWoken2 || xHighPriorityTaskWoken3 ||
+        xHighPriorityTaskWoken4 || xHighPriorityTaskWoken5 ||
+        xHighPriorityTaskWoken6;
+
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}
+
+void GPIOPortF_Handler(void)
+{
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    uint8_t status = GPIO_PORTF_RIS_R;
+
+    // SW1 (PF4)
+    if (status & (1 << 4)) {
+        GPIO_PORTF_ICR_R = (1 << 4);  // Clear interrupt flag early
+        xEventGroupSetBitsFromISR(xEventGroup, mainSW1_PRESSED_BIT, &xHigherPriorityTaskWoken);
+    }
+    // SW2 (PF0)
+    if (status & (1 << 0)) {
+        GPIO_PORTF_ICR_R = (1 << 0);  // Clear interrupt flag early
+        xEventGroupSetBitsFromISR(xEventGroup, mainSW2_PRESSED_BIT, &xHigherPriorityTaskWoken);
+        }
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}

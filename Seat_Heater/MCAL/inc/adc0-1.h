@@ -1,0 +1,30 @@
+/*
+ * adc0-1.h
+ *
+ *  Created on: Jun 7, 2025
+ *      Author: Mohamed Ashraf
+ */
+
+#ifndef MCAL_INC_ADC0_1_H_
+#define MCAL_INC_ADC0_1_H_
+#include<stdint.h>
+#include"tm4c123gh6pm.h"
+#include"Macros.h"
+/* ------------------ Macro Declarations ---------------------------*/
+#define TARGET_MAX 45       // Desired maximum output value
+#define ADC_MAX 4095        // 12-bit ADC maximum
+#define VREF 3.3f           // Reference voltage
+/* ------------------ Macro Declarations ---------------------------*/
+/* ------------------ Software Interfaces Declarations -------------*/
+void ADC0_Init(void);
+void ADC1_Init(void);
+void ADC0_StartConv(void);
+void ADC1_StartConv(void);
+uint32_t ADC0_Read(void);
+uint32_t ADC1_Read(void);
+/* ------------------ Software Interfaces Declarations -------------*/
+
+
+
+
+#endif /* MCAL_INC_ADC0_1_H_ */

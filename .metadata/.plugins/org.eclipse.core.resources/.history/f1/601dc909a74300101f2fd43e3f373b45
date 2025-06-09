@@ -1,0 +1,163 @@
+/**
+ * main.c
+ */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "event_groups.h"
+#include "semphr.h"
+#include "timers.h"
+#include "stream_buffer.h"
+#include "message_buffer.h"
+#include <stdint.h>
+#include "uart0.h"
+#include "adc0-1.h"
+#include "GPTM.h"
+#include "GPIO.h"
+
+/**
+ * @brief Functions that implement FreeRTOS tasks.
+ */
+static void prvReaderTask( void * pvParams );
+static void prvWriterTask( void * pvParams );
+/*-----------------------------------------------------------*/
+
+/**
+ * @brief Message buffer used in this program.
+ */
+static MessageBufferHandle_t xMessageBuffer = NULL;
+/*-----------------------------------------------------------*/
+
+/**
+ * @brief Tutorial entry point.
+ */
+int main(void)
+{
+    UART0_Init();
+    BaseType_t xTaskCreationResult = pdFAIL;
+
+        xTaskCreationResult = xTaskCreate( prvReaderTask,
+                                           "Reader",
+                                           configMINIMAL_STACK_SIZE,
+                                           NULL,
+                                           tskIDLE_PRIORITY + 1,
+                                           NULL );
+        configASSERT( xTaskCreationResult == pdPASS );
+
+        xTaskCreationResult = xTaskCreate( prvWriterTask,
+                                           "Writer",
+                                           configMINIMAL_STACK_SIZE,
+                                           NULL,
+                                           tskIDLE_PRIORITY,
+                                           NULL );
+        configASSERT( xTaskCreationResult == pdPASS );
+
+        /*
+         * TODO 1 - Create a message buffer of size 20 using xMessageBufferCreate
+         * API.
+         *
+         * Use the following values for xMessageBufferCreate parameters:
+         * xBufferSizeBytes     20
+         *
+         * Assign the return value to xMessageBuffer.
+         */
+        xMessageBuffer=xMessageBufferCreate(20);
+        configASSERT( xMessageBuffer != NULL );
+
+        vTaskStartScheduler();
+
+    for(;;) {} // Should never reach here
+}
+/*-----------------------------------------------------------*/
+
+static void prvReaderTask( void * pvParams )
+{
+    uint8_t ucRxData[ 10 ];
+    size_t i, uxReceivedBytes;
+
+    /* Silence warning about unused parameters. */
+    ( void ) pvParams;
+
+    for( ;; )
+    {
+        /*
+         * TODO 2 - Read a message from the message buffer using
+         * xMessageBufferReceive API.
+         *
+         * Use the following values for xMessageBufferReceive parameters:
+         * xMessageBuffer       xMessageBuffer
+         * pvRxData             &( ucRxData[ 0 ] )
+         * xBufferLengthBytes   10
+         * xTicksToWait         portMAX_DELAY
+         *
+         * Assign the return value to uxReceivedBytes.
+         */
+
+        uxReceivedBytes=xMessageBufferReceive(xMessageBuffer,ucRxData,10,portMAX_DELAY);
+        UART0_SendString("Received message length :- ");
+        UART0_SendNumber((uint32_t)uxReceivedBytes);
+        UART0_SendString("\r\n");
+        for( i = 0; i < uxReceivedBytes; i++ )
+        {
+            UART0_SendNumber((uint32_t)ucRxData[ i ]);
+            UART0_SendString(" ");
+        }
+
+        UART0_SendString("\r\n");
+    }
+}
+/*-----------------------------------------------------------*/
+
+static void prvWriterTask( void * pvParams )
+{
+    uint8_t ucMessage1[ 5 ] = { 0x1, 0x2, 0x3, 0x4, 0x5 };
+    uint8_t ucMessage2[ 4 ] = { 0xA, 0xB, 0xC, 0xD };
+    size_t uxSentBytes;
+
+    /* Silence warning about unused parameters. */
+    ( void ) pvParams;
+
+    for( ;; )
+    {
+        UART0_SendString("Sending first message...\r\n" );
+
+        /*
+         * TODO 3 - Send the first message to the message buffer using
+         * xMessageBufferSend API.
+         *
+         * Use the following values for xMessageBufferSend parameters:
+         * xMessageBuffer       xMessageBuffer
+         * pvTxData             &( ucMessage1[ 0 ] )
+         * xDataLengthBytes     5
+         * xTicksToWait         portMAX_DELAY
+         *
+         * Assign the return value to uxSentBytes.
+         */
+        uxSentBytes=xMessageBufferSend(xMessageBuffer,ucMessage1,5,portMAX_DELAY);
+        configASSERT( uxSentBytes == 5 );
+
+        UART0_SendString("Sending second message...\r\n" );
+
+        /*
+         * TODO 4 - Send the second message to the message buffer using
+         * xMessageBufferSend API.
+         *
+         * Use the following values for xMessageBufferSend parameters:
+         * xMessageBuffer       xMessageBuffer
+         * pvTxData             &( ucMessage2[ 0 ] )
+         * xDataLengthBytes     4
+         * xTicksToWait         portMAX_DELAY
+         *
+         * Assign the return value to uxSentBytes.
+         */
+        uxSentBytes=xMessageBufferSend(xMessageBuffer,ucMessage2,4,portMAX_DELAY);
+        configASSERT( uxSentBytes == 4 );
+
+        UART0_SendString("Finished sending both the messages.\r\n" );
+
+        vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS( 1000 ) );
+    }
+}
+/*-----------------------------------------------------------*/
+void ADC0SS0_HANDLER(void) {}
+void ADC1SS0_HANDLER(void) {}
+void GPIOPortF_Handler(void) {}

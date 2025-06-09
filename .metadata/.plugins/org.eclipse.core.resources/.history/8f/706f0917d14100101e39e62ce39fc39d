@@ -1,0 +1,20 @@
+/*
+ *  uart0.h
+ *
+ *  Created on: June 5, 2025
+ *      Author: Mohamed Ashraf
+ */
+#ifndef UART0_H_
+#define UART0_H_
+#include<stdint.h>
+#include""
+/* ------------------ Software Interfaces Declarations -------------*/
+
+/* ------------------ Software Interfaces Declarations -------------*/
+void UART0_Init(void);
+
+void UART0_SendByte(uint8 data);
+uint8 UART0_ReceiveByte(void);
+void UART0_SendString(const uint8 *pData);
+void UART0_SendInteger(sint64 sNumber);
+#endif

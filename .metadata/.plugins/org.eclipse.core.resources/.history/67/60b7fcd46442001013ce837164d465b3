@@ -1,0 +1,71 @@
+/*
+ * adc0-1.c
+ *
+ *  Created on: Jun 5, 2025
+ *      Author: Mohamed Ashraf
+ */
+#include "adc0-1.h"
+
+void ADC0_Init(void)
+{
+    //analog input 0 is at PE3
+    SYSCTL_RCGCADC_R |= 0x01;      // Enable ADC0 clock
+    SYSCTL_RCGCGPIO_R |= 0x10;       // Enable GPIO port E clock
+    while(!(SYSCTL_PRADC_R & 0x01));// Wait for ADC ready
+    while((SYSCTL_PRGPIO_R & 0x10) == 0); // Wait for GPIO ready
+    GPIO_PORTE_DIR_R&=~(1<<3);
+    GPIO_PORTE_AFSEL_R |=(1<<3);
+    GPIO_PORTE_PCTL_R&= ~(0x0000000F << (3 * 4));
+    GPIO_PORTE_DEN_R &=~(1<<3);
+    GPIO_PORTE_AMSEL_R |=(1<<3);
+    GPIO_PORTE_PUR_R&=~(1<<3);
+    GPIO_PORTE_PDR_R&=~(1<<3);
+    // sampler 0 ,analog pin 0,(PE3),
+    ADC0_ACTSS_R &= ~(1<<0);//disable sampler zero
+    ADC0_EMUX_R =0xFFF0;//sampler zero trigered by processor (ADCPSSI)
+    ADC0_SSMUX0_R=0;//analog input 0 enter rfrom mux0
+    ADC0_SSCTL0_R|= (1<<1);//set end bit
+    ADC0_ACTSS_R |= (1<<0);//enable sampler zero
+}
+void ADC1_Init(void)
+{
+    //analog input 1 is at PE2
+    SYSCTL_RCGCADC_R |= 0x02;      // Enable ADC1 clock
+    SYSCTL_RCGCGPIO_R |= 0x10;       // Enable GPIO port E clock
+    while(!(SYSCTL_PRADC_R & 0x02));// Wait for ADC ready
+    while((SYSCTL_PRGPIO_R & 0x10) == 0); // Wait for GPIO ready
+    GPIO_PORTE_DIR_R&=~(1<<2);
+    GPIO_PORTE_AFSEL_R |=(1<<2);
+    GPIO_PORTE_PCTL_R&= ~(0x0000000F << (2 * 4));
+    GPIO_PORTE_DEN_R &=~(1<<2);
+    GPIO_PORTE_AMSEL_R |=(1<<2);
+    GPIO_PORTE_PUR_R&=~(1<<2);
+    GPIO_PORTE_PDR_R&=~(1<<2);
+    // sampler 0 ,analog pin 0,(PE3),
+    ADC1_ACTSS_R &= ~(1<<0);//disable sampler zero
+    ADC1_EMUX_R =0xFFF0;//sampler zero trigered by processor (ADCPSSI)
+    ADC1_SSMUX0_R=1;//analog input 1 enter rfrom mux0
+    ADC1_SSCTL0_R|= (1<<1);//set end bit
+    ADC1_ACTSS_R |= (1<<0);//enable sampler zero
+}
+void ADC0_StartConv(void)
+{
+    ADC0_PSSI_R |= (1<<0);
+    while(!(ADC0_RIS_R & 0x01));
+}
+void ADC1_StartConv(void)
+{
+    ADC1_PSSI_R |= (1<<0);
+    while(!(ADC1_RIS_R & 0x01));
+}
+uint32_t ADC0_Read(void)
+{
+    return ADC0_SSFIFO0_R;
+}
+uint32_t ADC1_Read(void)
+{
+    return ADC1_SSFIFO0_R;
+}
+
+
+

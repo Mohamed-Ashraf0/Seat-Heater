@@ -1,0 +1,53 @@
+/*
+ *  GPTM.c
+ *
+ *  Created on: June 5, 2025
+ *      Author: Mohamed Ashraf
+ */
+
+#include "GPTM.h"
+
+/**
+ * @brief Initializes Wide Timer 0A as a 32-bit one-shot down counter.
+ *        The timer uses a prescaler to create a tick time of 0.1 ms.
+ *        Clock source is assumed to be 16 MHz.
+ */
+void GPTM_WTimer0Init(void)
+{
+    SYSCTL_RCGCWTIMER_R |= (1 << 0);   // Enable clock for Wide Timer 0
+    while (!(SYSCTL_RCGCWTIMER_R & (1 << 0))); // Optional: Wait for clock to stabilize
+
+    WTIMER0_CTL_R = 0x0;               // Disable Timer A during configuration
+
+    WTIMER0_CFG_R = 0x04;              // Configure timer for 32-bit mode
+
+    WTIMER0_TAMR_R = 0x01;             // Set Timer A to one-shot down-count mode
+
+    WTIMER0_TAPR_R = 1600 - 1;         // Set prescaler to divide 16 MHz by 1600
+                                        // --> Tick time = 0.1 ms
+
+    WTIMER0_CTL_R |= 0x01;             // Enable Timer A
+}
+
+/**
+ * @brief Reads the number of ticks that have elapsed since the timer started.
+ * @return Elapsed ticks (each tick is 0.1 ms)
+ * @note Assumes one-shot mode starting from 0xFFFFFFFF.
+ */
+uint32_t GPTM_WTimer0Read(void)
+{
+    return (uint32_t)(0xFFFFFFFFUL - WTIMER0_TAR_R); // Return elapsed ticks
+}
+
+/**
+ * @brief Blocking delay using original 0.1ms-resolution timer.
+ * @param milliseconds Delay duration in milliseconds.
+ */
+void delay_ms(uint32_t milliseconds)
+{
+    // Convert ms to 0.1ms ticks (e.g., 50ms = 500 ticks)
+    uint32_t target_ticks =GPTM_WTimer0Read()+ milliseconds * 10;
+    while (GPTM_WTimer0Read() < target_ticks) {
+        // Busy-wait until target reached
+    }
+}

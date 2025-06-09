@@ -1,0 +1,15 @@
+#include<stdint.h>
+#include "uart0.h"
+int main(void)
+{
+UART0_Init();
+uint32_t j;
+    for (j = 0; j < 10; j++) {
+        UART0_SendString("NO Intensity  ");
+    }
+UART0_SendString("NO Intensity");
+while(1)
+{
+
+}
+}

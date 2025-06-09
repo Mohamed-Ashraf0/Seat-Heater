@@ -1,0 +1,27 @@
+/*
+ *  uart0.h
+ *
+ *  Created on: June 5, 2025
+ *      Author: Mohamed Ashraf
+ */
+#ifndef UART0_H_
+#define UART0_H_
+#include<stdint.h>
+#include"tm4c123gh6pm.h"
+#include"Macros.h"
+/* ------------------ Macro Declarations ---------------------------*/
+#define UART0_ENABLE     (0x01)  // UART Enable bit
+#define UART_TXE         (0x01 << 8)  // Transmit Enable
+#define UART_RXE         (0x01 << 9)  // Receive Enable
+#define UART_8N1         (0x03 << 5)  // 8-bit data, no parity, 1 stop bit
+
+/* ------------------ Macro Declarations ---------------------------*/
+/* ------------------ Software Interfaces Declarations -------------*/
+void UART0_Init(void);
+void UART0_SendByte(uint8 data);
+uint8 UART0_ReceiveByte(void);
+void UART0_SendString(const uint8 *pData);
+void UART0_SendInteger(sint64 sNumber);
+/* ------------------ Software Interfaces Declarations -------------*/
+
+#endif

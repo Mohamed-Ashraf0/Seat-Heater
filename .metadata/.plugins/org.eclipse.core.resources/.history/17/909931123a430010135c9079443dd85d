@@ -1,0 +1,130 @@
+/**
+ * main.c
+ */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "event_groups.h"
+#include "semphr.h"
+#include "timers.h"
+#include <stdint.h>
+#include "uart0.h"
+#include "adc0-1.h"
+#include "GPTM.h"
+#include "GPIO.h"
+
+/**
+ * @brief Functions that implement FreeRTOS tasks.
+ */
+static void prvTask1( void * pvParams );
+static void prvTask2( void * pvParams );
+/*-----------------------------------------------------------*/
+/**
+ * @brief Mutex used in this program.
+ */
+static SemaphoreHandle_t xMutex = NULL;
+/*-----------------------------------------------------------*/
+
+/**
+ * @brief Tutorial entry point.
+ */
+int main(void)
+{
+    UART0_Init();
+    BaseType_t xTaskCreationResult = pdFAIL;
+
+    xTaskCreationResult = xTaskCreate( prvTask1,
+                                       "Task1",
+                                       configMINIMAL_STACK_SIZE,
+                                       NULL,
+                                       tskIDLE_PRIORITY ,
+                                       NULL );
+    configASSERT( xTaskCreationResult == pdPASS );
+
+    xTaskCreationResult = xTaskCreate( prvTask2,
+                                       "Task2",
+                                       configMINIMAL_STACK_SIZE,
+                                       NULL,
+                                       tskIDLE_PRIORITY,
+                                       NULL );
+    configASSERT( xTaskCreationResult == pdPASS );
+    xMutex =xSemaphoreCreateMutex  ();
+    configASSERT( xMutex  != NULL );
+    vTaskStartScheduler();
+
+    for(;;) {} // Should never reach here
+}
+/*-----------------------------------------------------------*/
+static void prvTask1( void * pvParams )
+{
+    BaseType_t xSemaphoreGiveResult = pdFAIL;
+
+    /* Silence warning about unused parameters. */
+    ( void ) pvParams;
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    for( ;; )
+    {
+        /*
+         * TODO 2 - Take the mutex using xSemaphoreTake API.
+         *
+         * Use the following values for xSemaphoreTake parameters:
+         * xSemaphore   xMutex
+         * xBlockTime   portMAX_DELAY
+         */
+       // xSemaphoreTake(xMutex,portMAX_DELAY);
+        {
+            UART0_SendString("Task 1 running");
+            UART0_SendString(" \r\n\n**************************************\r\n\n");
+        }
+        /*
+         * TODO 3 - Give the mutex using xSemaphoreGive API.
+         *
+         * Use the following values for xSemaphoreGive parameters:
+         * xSemaphore   xMutex
+         *
+         * Assign the return value to xSemaphoreGiveResult.
+         */
+       // xSemaphoreGiveResult=xSemaphoreGive(xMutex);
+        //configASSERT( xSemaphoreGiveResult == pdPASS );
+        vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS( 1000 ) );
+    }
+
+}
+/*-----------------------------------------------------------*/
+
+static void prvTask2( void * pvParams )
+{
+    BaseType_t xSemaphoreGiveResult = pdFAIL;
+
+    /* Silence warning about unused parameters. */
+    ( void ) pvParams;
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    for( ;; )
+    {
+        /*
+         * TODO 4 - Take the mutex using xSemaphoreTake API.
+         *
+         * Use the following values for xSemaphoreTake parameters:
+         * xSemaphore   xMutex
+         * xBlockTime   portMAX_DELAY
+         */
+        //xSemaphoreTake(xMutex,portMAX_DELAY);
+         {
+         UART0_SendString("Task 2 running");
+         UART0_SendString(" \r\n\n**************************************\r\n\n");
+         }
+        /*
+         * TODO 5 - Give the mutex using xSemaphoreGive API.
+         *
+         * Use the following values for xSemaphoreGive parameters:
+         * xSemaphore   xMutex
+         *
+         * Assign the return value to xSemaphoreGiveResult.
+         */
+         //xSemaphoreGiveResult=xSemaphoreGive(xMutex);
+        //configASSERT( xSemaphoreGiveResult == pdPASS );
+        vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS( 1000 ) );
+    }
+}
+void ADC0SS0_HANDLER(void) {}
+void ADC1SS0_HANDLER(void) {}
+void GPIOPortF_Handler(void) {}

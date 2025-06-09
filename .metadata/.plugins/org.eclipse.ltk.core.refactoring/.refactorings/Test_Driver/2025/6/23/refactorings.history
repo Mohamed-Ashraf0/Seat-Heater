@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;LED_Blink/inc/std_types.h&apos; to &apos;Macros.h&apos;" description="Rename resource &apos;std_types.h&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="inc/std_types.h" name="Macros.h" stamp="1749077907345" updateReferences="true"/>
+</session>

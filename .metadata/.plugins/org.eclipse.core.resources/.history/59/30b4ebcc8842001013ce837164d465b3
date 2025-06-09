@@ -1,0 +1,41 @@
+/*
+ *  GPTM.c
+ *
+ *  Created on: June 5, 2025
+ *      Author: Mohamed Ashraf
+ */
+
+#include "GPTM.h"
+#include "tm4c123gh6pm_registers.h"
+
+/**
+ * @brief Initializes Wide Timer 0A as a 32-bit one-shot down counter.
+ *        The timer uses a prescaler to create a tick time of 0.1 ms.
+ *        Clock source is assumed to be 16 MHz.
+ */
+void GPTM_WTimer0Init(void)
+{
+    SYSCTL_RCGCWTIMER_REG |= (1 << 0);   // Enable clock for Wide Timer 0
+    while (!(SYSCTL_RCGCWTIMER_REG & (1 << 0))); // Optional: Wait for clock to stabilize
+
+    WTIMER0_CTL_REG = 0x0;               // Disable Timer A during configuration
+
+    WTIMER0_CFG_REG = 0x04;              // Configure timer for 32-bit mode
+
+    WTIMER0_TAMR_REG = 0x01;             // Set Timer A to one-shot down-count mode
+
+    WTIMER0_TAPR_REG = 1600 - 1;         // Set prescaler to divide 16 MHz by 1600
+                                         // --> Tick time = 0.1 ms
+
+    WTIMER0_CTL_REG |= 0x01;             // Enable Timer A
+}
+
+/**
+ * @brief Reads the number of ticks that have elapsed since the timer started.
+ * @return Elapsed ticks (each tick is 0.1 ms)
+ * @note Assumes one-shot mode starting from 0xFFFFFFFF.
+ */
+uint32 GPTM_WTimer0Read(void)
+{
+    return (uint32)(0xFFFFFFFFUL - WTIMER0_TAR_REG); // Return elapsed ticks
+}

@@ -1,0 +1,61 @@
+/**
+ * main.c
+ */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "event_groups.h"
+#include "semphr.h"
+#include "timers.h"
+#include <stdint.h>
+#include "uart0.h"
+#include "adc0-1.h"
+#include "GPTM.h"
+#include "GPIO.h"
+
+/**
+ * @brief Timer callback function.
+ */
+static void prvTimerCallback( TimerHandle_t xTimer );
+/*-----------------------------------------------------------*/
+int main(void)
+{
+    UART0_Init();
+    BaseType_t xTimerStartResult  = pdFAIL;
+    TimerHandle_t  xAutoReloadTimer, xOneShotTimer;
+    xAutoReloadTimer=xTimerCreate(
+            "AutoTimer",//pcTimerName
+            pdMS_TO_TICKS( 1000 ),//xTimerPeriodInTicks
+            pdTRUE,//xAutoReload
+            ( void * ) 1, //pvTimerID
+            prvTimerCallback //pxCallbackFunction
+            );
+    configASSERT( xAutoReloadTimer != NULL );
+    xOneShotTimer=xTimerCreate(
+               "OneTimer",//pcTimerName
+               pdMS_TO_TICKS( 100 ),//xTimerPeriodInTicks
+               pdFALSE,//xAutoReload
+               ( void * ) 2, //pvTimerID
+               prvTimerCallback //pxCallbackFunction
+               );
+    configASSERT( xOneShotTimer != NULL );
+    xTimerStartResult=xTimerStart (xAutoReloadTimer,//xTimer
+                                   0//xTicksToWait
+                                    );
+    configASSERT( xTimerStartResult == pdPASS );
+    xTimerStartResult=xTimerStart (xOneShotTimer,//xTimer
+                                       0//xTicksToWait
+                                        );
+        configASSERT( xTimerStartResult == pdPASS );
+    vTaskStartScheduler();
+
+    for(;;) {} // Should never reach here
+}
+static void prvTimerCallback( TimerHandle_t xTimer )
+{
+    UART0_SendString("timer id :-");
+    UART0_SendNumber((uint32_t)pvTimerGetTimerID);
+    UART0_SendString(" \r\n\n**************************************\r\n\n");
+}
+void ADC0SS0_HANDLER(void) {}
+void ADC1SS0_HANDLER(void) {}
+void GPIOPortF_Handler(void) {}

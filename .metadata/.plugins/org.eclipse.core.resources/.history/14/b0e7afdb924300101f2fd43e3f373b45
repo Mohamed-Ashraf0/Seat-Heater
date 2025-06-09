@@ -1,0 +1,107 @@
+/**
+ * main.c
+ */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "event_groups.h"
+#include "semphr.h"
+#include "timers.h"
+#include <stdint.h>
+#include "uart0.h"
+#include "adc0-1.h"
+#include "GPTM.h"
+#include "GPIO.h"
+
+
+/**
+ * @brief Functions that implement FreeRTOS tasks.
+ */
+static void prvTask1( void * pvParams );
+static void prvTask2( void * pvParams );
+/*-----------------------------------------------------------*/
+
+/**
+ * @brief Handle of task 1.
+ */
+static TaskHandle_t xTask1Handle = NULL;
+/*-----------------------------------------------------------*/
+
+/**
+ * @brief Tutorial entry point.
+ */
+int main(void)
+{
+    UART0_Init();
+    BaseType_t xTaskCreationResult = pdFAIL;
+
+    xTaskCreationResult = xTaskCreate( prvTask1,
+                                       "Task1",
+                                       configMINIMAL_STACK_SIZE,
+                                       NULL,
+                                       tskIDLE_PRIORITY + 1,
+                                       &( xTask1Handle ) );
+    configASSERT( xTaskCreationResult == pdPASS );
+
+    xTaskCreationResult = xTaskCreate( prvTask2,
+                                       "Task2",
+                                       configMINIMAL_STACK_SIZE,
+                                       NULL,
+                                       tskIDLE_PRIORITY,
+                                       NULL );
+    configASSERT( xTaskCreationResult == pdPASS );
+
+        vTaskStartScheduler();
+
+    for(;;) {} // Should never reach here
+}
+/*-----------------------------------------------------------*/
+
+static void prvTask1( void * pvParams )
+{
+    /* Silence warning about unused parameters. */
+    ( void ) pvParams;
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    for( ;; )
+    {
+        UART0_SendString("Task 1: Waiting for notification...\r\n" );
+
+        /*
+         * TODO 1 - Wait for a task notification using ulTaskNotifyTake API.
+         *
+         * Use the following values for ulTaskNotifyTake parameters:
+         * xClearCountOnExit    pdTRUE
+         * xTicksToWait         portMAX_DELAY
+         */
+
+        ulTaskNotifyTake(pdTRUE,portMAX_DELAY);
+        UART0_SendString("Task 1: Received notification...\r\n" );
+    }
+}
+/*-----------------------------------------------------------*/
+
+static void prvTask2( void * pvParams )
+{
+    /* Silence warning about unused parameters. */
+    ( void ) pvParams;
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    for( ;; )
+    {
+        UART0_SendString( "Task 2: Notifying task 1...\r\n" );
+
+        /*
+         * TODO 2 - Notify task 1 using xTaskNotifyGive API.
+         *
+         * Use the following values for xTaskNotifyGive parameters:
+         * xTaskToNotify    xTask1Handle
+         */
+
+        xTaskNotifyGive(xTask1Handle);
+        UART0_SendString(stderr, "Task 2: Notified task 1...\r\n" );
+
+        vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS( 1000 ) );
+    }
+}
+/*-----------------------------------------------------------*/
+void ADC0SS0_HANDLER(void) {}
+void ADC1SS0_HANDLER(void) {}
+void GPIOPortF_Handler(void) {}
