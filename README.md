@@ -3,7 +3,11 @@
 This project implements a real-time **Seat Heater Control System** for the driver and passenger seats in a vehicle, built on the **Tiva C (TM4C123GH6PM)** microcontroller using **FreeRTOS**. The system simulates temperature sensing, heating control, diagnostics, and real-time communication using LEDs, buttons, UART, and more.
 
 ---
+### 📽️ Demo Video
 
+Watch a full demonstration of the Seat Heater Control System in action:
+
+👉 [**Click here to view the demo video**]([https://your-link-here.com](https://drive.google.com/file/d/1d6cjCyyKYW0Kpo7Lk9ofvzDSn-W6cpok/view?usp=sharing))
 ## 🧩 Project Overview
 
 Each seat includes:
