@@ -31,13 +31,7 @@ Heater intensity adapts automatically:
 
 - 🌡️ **Dynamic Temperature Control** with ±2°C tolerance
 - 🚨 **Diagnostics Handling** (sensor range: 5°C – 40°C)
-- 🔐 **RTOS Features**:
-  - Minimum **6 tasks**
-  - **Mutexes** for shared resources
-  - **Semaphores/Event flags** for task synchronization
-  - **Edge-triggered interrupts** for buttons
-  - **Trace hooks** for runtime analysis
-- 💾 **Non-Volatile Memory (Bonus)** for:
+- 💾 **Non-Volatile Memory (To Be Done)** for:
   - Last heating level
   - Diagnostic logs
 - 📊 **Runtime Measurements**:
