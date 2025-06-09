@@ -31,10 +31,7 @@
 #define mainSW1_PRESSED_BIT           ( 1UL << 0UL )//sw1 pressed by driver
 #define mainSW2_PRESSED_BIT           ( 1UL << 1UL )//sw2 pressed by passenger
 #define mainData_TO_DISPLAY_BIT       ( 1UL << 2UL )//any of driver or passenger (current temp or desired temo or intensity )changed
-/*#define mainDRIVER_G_40_BIT           ( 1UL << 3UL )
-#define mainDRIVER_L_5_BIT            ( 1UL << 4UL )
-#define mainPassenger_G_40_BIT        ( 1UL << 5UL )
-#define mainPassenger_L_5_BIT        ( 1UL << 6UL )*/
+
 /**
  * @brief Mutex used in this program.
  */
