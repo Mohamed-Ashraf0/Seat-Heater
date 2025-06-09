@@ -287,7 +287,7 @@ static void vDesiredTempControllerTask(void *pvParameters)
         );
 
         // Debounce delay
-        vTaskDelay(pdMS_TO_TICKS(50));
+        vTaskDelay(pdMS_TO_TICKS(100));
 
         // Re-check the GPIO pin to confirm it's still pressed
         if ((xEventBitsValue & mainSW1_PRESSED_BIT) && ((GPIO_PORTF_DATA_R & (1 << 4)) == 0))  // PF4
