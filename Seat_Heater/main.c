@@ -157,12 +157,11 @@ HeaterControllerTaskParameter DriverHeaterControllerTaskParameter        ={&xDri
                                                                           GreenLedOn,
                                                                           RedLedOn
                                                                           };
-void nothing (void){}//3 external leds function
 HeaterControllerTaskParameter PassengerHeaterControllerTaskParameter     ={&xPassengerIntensityQueue,
-                                                                           nothing,//TO DO change to external Leds
-                                                                           nothing,//TO DO change to external Leds
-                                                                           nothing,//TO DO change to external Leds
-                                                                           nothing//TO DO change to external Leds
+                                                                           ExtAllLedOff,//TO DO change to external Leds
+                                                                           ExtBlueLedOn,//TO DO change to external Leds
+                                                                           ExtGreenLedOn,//TO DO change to external Leds
+                                                                           ExtRedLedOn//TO DO change to external Leds
                                                                           };
 ErrorHandlerParameter DriverErrorHandlerParameter                        ={&xDriverDiagnosticInfoQueue,
                                                                            &xDriverHeaterStateSemphr,
@@ -172,8 +171,8 @@ ErrorHandlerParameter DriverErrorHandlerParameter                        ={&xDri
 ErrorHandlerParameter PassengerErrorHandlerParameter                        ={&xPassengerDiagnosticInfoQueue,
                                                                               &xPassengerHeaterStateSemphr,
                                                                               &gPassengerHeaterState,
-                                                                              nothing,
-                                                                              nothing};
+                                                                              ExtAllLedOff,
+                                                                              ExtRedLedOn};
 /* Diagnostic array section in RAM */
 DiagnosticsData DiagnosticArray[10];
 uint8_t DiagnosticIndex = 0;
@@ -530,7 +529,7 @@ static void vDisplayRuntimeMeasurmentTask(void *pvParameters)
         UART0_SendNumber(Cpu_Load);
         UART0_SendString(" \r\n\n==================================\r\n\n");
         xSemaphoreGive(xDisplayMutex);
-     vTaskDelayUntil(&xLastWakeTime, 3000);
+     vTaskDelayUntil(&xLastWakeTime, 4000);
     }
 
 }
